@@ -11,7 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #24157a;" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #6610f2;" data-bs-theme="dark">
     <div class="container">
         <a class="navbar-brand" href="#" aria-label="Home">
             <i class="fa-solid fa-house"></i>
@@ -36,7 +36,10 @@
             </ul>
             <form class="d-flex ms-auto" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-                <button class="btn btn-light" type="submit">Search</button>
+                <button class="btn" style="--bs-btn-bg: #290661;" type="submit" aria-label="Search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="visually-hidden">Search</span>
+                </button>
             </form>
         </div>
     </div>
