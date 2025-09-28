@@ -34,14 +34,21 @@
 
     <script>
     $(document).ready(function() {
-        
-        // Load members on page load
-        loadMembers();
+        // Show loading container by default
+        $('#loading').show();
+        $('#membersContainer').empty();
         
         // Search functionality
-        $('#searchBtn').click(loadMembers);
+        $('#searchBtn').click(function() {
+            const searchTerm = $('#searchInput').val().trim();
+            if (searchTerm) loadMembers();
+        });
+        
         $('#searchInput').on('keypress', function(e) {
-            if (e.which === 13) loadMembers();
+            if (e.which === 13) {
+                const searchTerm = $(this).val().trim();
+                if (searchTerm) loadMembers();
+            }
         });
         
         function loadMembers() {
@@ -68,10 +75,19 @@
 
         function displayMembers(members, searchTerm = '') {
             const $container = $('#membersContainer');
+            const $loading = $('#loading');
+            
+            // Always hide the loading container when processing a search
+            $loading.hide();
             $container.empty();
 
+            // If no search term, show the loading container with instructions
+            if (!searchTerm) {
+                $loading.show();
+                return [];
+            }
+
             const filtered = members.filter(member => {
-                if (!searchTerm) return true; // Show all if no search term
                 
                 const name = (member.name?.official_full || 
                             (member.name?.first && member.name?.last ? 
