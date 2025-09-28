@@ -13,7 +13,8 @@
     <nav class="w3-bar w3-theme-d5">
         <a href="#" class="w3-bar-item w3-button w3-mobile">Home</a>
         <label>
-            <input type="text" id="searchInput" class="w3-bar-item w3-input w3-mobile" placeholder="Search">
+            <input type="text" id="searchInput" class="w3-bar-item w3-input w3-mobile"
+                   placeholder="Search Representative Name">
         </label>
         <a href="#" class="w3-bar-item w3-button w3-deep-purple w3-mobile">Search</a>
     </nav>
@@ -92,10 +93,10 @@
 
             const filtered = members.filter(member => {
                 
-                const name = (member.name?.official_full || 
-                            (member.name?.first && member.name?.last ? 
-                            `${member.name.first} ${member.name.last}` : 
-                            '')).toLowerCase();
+                const name = (member && member.name && 
+                            (member.name['official_full'] || 
+                             (member.name.first && member.name.last ? 
+                              `${member.name.first} ${member.name.last}` : '')) || '').toLowerCase();
                 const state = member.terms?.[0]?.state?.toLowerCase() || '';
                 const district = member.terms?.[0]?.district ? `district ${member.terms[0].district}` : '';
                 const party = member.terms?.[0]?.party?.toLowerCase() || '';
