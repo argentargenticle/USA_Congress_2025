@@ -34,17 +34,23 @@
 
     <script>
     $(document).ready(function() {
+        // Cache jQuery selectors - using class selector instead of ID for the search button
+        const $loading = $('#loading');
+        const $membersContainer = $('#membersContainer');
+        const $searchInput = $('#searchInput');
+        const $searchBtn = $('.w3-deep-purple.w3-button'); // Using class selector instead of ID
+        
         // Show loading container by default
-        $('#loading').show();
-        $('#membersContainer').empty();
+        $loading.show();
+        $membersContainer.empty();
         
         // Search functionality
-        $('#searchBtn').click(function() {
-            const searchTerm = $('#searchInput').val().trim();
+        $searchBtn.click(function() {
+            const searchTerm = $searchInput.val().trim();
             if (searchTerm) loadMembers();
         });
         
-        $('#searchInput').on('keypress', function(e) {
+        $searchInput.on('keypress', function(e) {
             if (e.which === 13) {
                 const searchTerm = $(this).val().trim();
                 if (searchTerm) loadMembers();
@@ -52,8 +58,8 @@
         });
         
         function loadMembers() {
-            const searchTerm = $('#searchInput').val().toLowerCase();
-            $('#loading').show();
+            const searchTerm = $searchInput.val().toLowerCase();
+            $loading.show();
 
             $.ajax({
                 url: 'https://unitedstates.github.io/congress-legislators/legislators-current.json',
@@ -66,20 +72,17 @@
                 }
             })
             .fail(function(error) {
-                $('#membersContainer').html('<div class="w3-panel w3-red">Error loading members</div>');
+                $membersContainer.html('<div class="w3-panel w3-red">Error loading members</div>');
             })
             .always(function() {
-                $('#loading').hide();
+                $loading.hide();
             });
         }
 
         function displayMembers(members, searchTerm = '') {
-            const $container = $('#membersContainer');
-            const $loading = $('#loading');
-            
             // Always hide the loading container when processing a search
             $loading.hide();
-            $container.empty();
+            $membersContainer.empty();
 
             // If no search term, show the loading container with instructions
             if (!searchTerm) {
@@ -105,7 +108,7 @@
             });
 
             if (filtered.length === 0) {
-                $container.html('<div class="w3-panel w3-padding-16 w3-yellow"><h4>No members found</h4></div>');
+                $membersContainer.html('<div class="w3-panel w3-padding-16 w3-yellow"><h4>No members found</h4></div>');
                 return;
             }
 
@@ -136,7 +139,7 @@
                        </div>
                    </div>
                 `;
-                $container.append(card);
+                $membersContainer.append(card);
             });
         }
     });
