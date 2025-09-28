@@ -76,6 +76,8 @@
             Please enter a search term.\
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
           </div>';
+        // Show only one warning and replace any existing danger
+        $results.find('.alert-warning, .alert-danger').remove();
         $results.prepend(alertHtml);
         $('#navbarSearchInput').trigger('focus');
         return;
@@ -96,6 +98,8 @@
             const msg = (xhr && xhr.status === 404)
               ? 'Dataset not found (404).'
               : (xhr && xhr.status === 0 ? 'Cannot load dataset (blocked/offline).' : 'Failed to load dataset.');
+            // Replace any existing warning/danger so only one alert is shown
+            $results.find('.alert-warning, .alert-danger').remove();
             $results.prepend('<div class="alert alert-danger mt-3" role="alert">' + msg + '</div>');
           });
         return;
@@ -123,9 +127,11 @@
       }
 
       if (!representativeFound) {
+        $results.find('.alert-warning, .alert-danger').remove();
+        const safeQuery = $('<div>').text(query).html();
         const alertHtml =
           '<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">\
-            No Representative found for \'' + $('<div>').text(query).html() + '\'.\
+            No Representative found for \'' + safeQuery + '\'.\
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
           </div>';
         $results.prepend(alertHtml);
