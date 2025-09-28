@@ -27,7 +27,7 @@
             <p>Use the search bar above to find specific members of congress. You can search by name or state. Once you find a member, click on their name to view their profile.</p>
             <p>Each member of congress has a profile which includes their name, state, committees they are a part of, and their position in the hemicycle.</p>
         </div>
-        <div id="membersContainer" class="w3-grid-padding w3-padding-16" style="grid-template-columns:auto auto auto">
+        <div id="membersContainer" class="w3-row-padding w3-padding-16">
             <!-- Members will be loaded here -->
         </div>
     </div>
@@ -123,16 +123,20 @@
                              (member.name.first && member.name.last ? 
                               `${member.name.first} ${member.name.last}` : '')) || 'Unknown Member');
                 const card = `
-                   <div class="w3-card-2 w3-hover-shadow ${member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Democrat' ? 'w3-blue' :
-                    member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Republican' ? 'w3-red' : 'w3-purple'}" style="display: flex; align-items: center;">
-                        <div class="w3-margin-right w3-margin" style="flex: 0 0 auto;">
-                            <img class="w3-round-xlarge w3-image member-photo" 
-                                src="${member && member['id'] && member['id']['bioguide'] ? 
-                    `https://bioguide.congress.gov/bioguide/photo/${member['id']['bioguide'].charAt(0)}/${member['id']['bioguide']}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" 
-                                alt="${name}" 
-                                style="width: auto; height: 240px; object-fit: cover;"
-                                data-fallback-src="https://placehold.co/160x200/000000/FFFFFF/png">
-                        </div>
+                   <div class="w3-col s12 m12 l6 w3-padding">
+                       <div class="w3-card-2 w3-hover-shadow ${member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Democrat' ? 'w3-blue' :
+                    member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Republican' ? 'w3-red' : 'w3-purple'}">
+                        <div class="w3-row">
+                            <div class="w3-col s12 m4 l4 w3-padding-16 w3-center">
+                                <img class="w3-round-xlarge" 
+                                    src="${member && member['id'] && member['id']['bioguide'] ? 
+                            `https://bioguide.congress.gov/bioguide/photo/${member['id']['bioguide'].charAt(0)}/${member['id']['bioguide']}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" 
+                                    alt="${name}" 
+                                    style="width: 100%; max-width: 200px; height: auto;"
+                                    onerror="this.src='https://placehold.co/200x240/000000/FFFFFF/png'"
+                                    data-fallback-src="https://placehold.co/160x200/000000/FFFFFF/png">
+                            </div>
+                            <div class="w3-col s12 m8 l8 w3-padding">
                         <div class="w3-padding" style="flex: 1; display: flex; flex-direction: column; justify-content: center; height: 100%;">
                             <div class="w3-center w3-white w3-margin w3-padding-16 w3-round-xlarge">
                                 <header class="w3-container">
