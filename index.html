@@ -116,15 +116,17 @@
 
             filtered.forEach(member => {
                 // Format name from the API response
-                const name = member.name?.official_full || 
-                           (member.name?.first && member.name?.last ? 
-                           `${member.name.first} ${member.name.last}` : 
-                           'Unknown Member');
+                const name = (member && member.name && 
+                            (member.name['official_full'] || 
+                             (member.name.first && member.name.last ? 
+                              `${member.name.first} ${member.name.last}` : '')) || 'Unknown Member');
                 const card = `
-                   <div class="w3-card-2 w3-hover-shadow ${member.terms?.[0]?.party === 'Democrat' ? 'w3-blue' : member.terms?.[0]?.party === 'Republican' ? 'w3-red' : 'w3-purple'}" style="display: flex; align-items: center;">
+                   <div class="w3-card-2 w3-hover-shadow ${member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Democrat' ? 'w3-blue' :
+                    member['terms'] && member['terms'][0] && member['terms'][0]['party'] === 'Republican' ? 'w3-red' : 'w3-purple'}" style="display: flex; align-items: center;">
                         <div class="w3-margin-right w3-margin" style="flex: 0 0 auto;">
                             <img class="w3-round-xlarge w3-image member-photo" 
-                                src="${member.id?.bioguide ? `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide.charAt(0)}/${member.id.bioguide}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" 
+                                src="${member && member['id'] && member['id']['bioguide'] ? 
+                    `https://bioguide.congress.gov/bioguide/photo/${member['id']['bioguide'].charAt(0)}/${member['id']['bioguide']}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" 
                                 alt="${name}" 
                                 style="width: auto; height: 240px; object-fit: cover;"
                                 data-fallback-src="https://placehold.co/160x200/000000/FFFFFF/png">
@@ -135,10 +137,10 @@
                                     <h4>${name}</h4>
                                 </header>
                                 <p class="w3-round" style="margin: 5px 0 10px 0;">
-                                    ${member.terms?.[0]?.type === 'rep' ? 'House of Representatives' : 'Senate'}
+                                    ${member['terms'] && member['terms'][0] && member['terms'][0]['type'] === 'rep' ? 'House of Representatives' : 'Senate'}
                                 </p>
-                                <p>${member.terms && member.terms.length > 0 ? member.terms[0].party : 'Unknown'} - ${member.terms && member.terms.length > 0 ? member.terms[0].state : 'N/A'}</p>
-                                <p>${member.terms && member.terms[0]?.district ? `District ${member.terms[0].district}` : 'At-Large'}</p>
+                                <p>${member['terms'] && member['terms'][0] ? (member['terms'][0]['party'] || 'Unknown') : 'Unknown'} - ${member['terms'] && member['terms'][0] ? (member['terms'][0]['state'] || 'N/A') : 'N/A'}</p>
+                                <p>${member['terms'] && member['terms'][0] && member['terms'][0]['district'] ? `District ${member['terms'][0]['district']}` : 'At-Large'}</p>
                                 <a href="#" class="w3-button w3-round-large w3-black w3-hover-deep-purple">More Info</a>
                             </div>
                        </div>
