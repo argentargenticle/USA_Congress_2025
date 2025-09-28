@@ -71,10 +71,21 @@
             $container.empty();
 
             const filtered = members.filter(member => {
-                if (!searchTerm) return true;
-                const name = `${member.firstName || ''} ${member.lastName || ''}`.toLowerCase();
-                return name.includes(searchTerm) ||
-                       (member.state || '').toLowerCase().includes(searchTerm);
+                if (!searchTerm) return true; // Show all if no search term
+                
+                const name = (member.name?.official_full || 
+                            (member.name?.first && member.name?.last ? 
+                            `${member.name.first} ${member.name.last}` : 
+                            '')).toLowerCase();
+                const state = member.terms?.[0]?.state?.toLowerCase() || '';
+                const district = member.terms?.[0]?.district ? `district ${member.terms[0].district}` : '';
+                const party = member.terms?.[0]?.party?.toLowerCase() || '';
+                const searchLower = searchTerm.toLowerCase().trim();
+                
+                return name.includes(searchLower) || 
+                       state.includes(searchLower) ||
+                       district.includes(searchLower) ||
+                       party.includes(searchLower);
             });
 
             if (filtered.length === 0) {
