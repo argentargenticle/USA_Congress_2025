@@ -105,9 +105,9 @@
         return;
       }
 
-      // Step 1: If we cannot find a Representative for the query, show a danger alert and stop.
+      // Step 1: Find all matching Representatives by name substring (tolerant to middle names/initials)
       // Try to use loaded dataset if available on window.congress.legislators
-      let representativeFound = false;
+      let matches = [];
       try {
         const data = (window.congress && Array.isArray(window.congress.legislators)) ? window.congress.legislators : null;
         if (data) {
@@ -117,7 +117,7 @@
           const qFirst = normalize(qParts[0] || '');
           const qLast = normalize(qParts[qParts.length - 1] || '');
 
-          representativeFound = data.some(function (m) {
+          data.forEach(function (m) {
             const first = (m.name && m.name.first) || '';
             const last = (m.name && m.name.last) || '';
             const official = (m.name && m.name['official_full']) || '';
@@ -130,44 +130,61 @@
               candFull.indexOf(qNorm) !== -1 ||
               candFirstLast.indexOf(qNorm) !== -1 ||
               (qFirst && qLast && candFull.indexOf(qFirst) !== -1 && candFull.indexOf(qLast) !== -1);
-            if (!nameMatch) return false;
+            if (!nameMatch) return;
 
             const terms = Array.isArray(m['terms']) ? m['terms'] : [];
-            if (!terms.length) return false;
+            if (!terms.length) return;
             const lastTerm = terms[terms.length - 1];
-            return lastTerm.type === 'rep';
+            if (lastTerm.type === 'rep' || lastTerm.type === 'sen') {
+              matches.push({ member: m, term: lastTerm });
+            }
           });
         }
       } catch (e) {
-        representativeFound = false;
+        matches = [];
       }
 
-      if (!representativeFound) {
+      if (!matches.length) {
         $results.find('.alert-warning, .alert-danger').remove();
         const safeQuery = $('<div>').text(query).html();
         const alertHtml =
           '<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">\
-            No Representative found for \'' + safeQuery + '\'.\
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+            No members found for \'" + safeQuery + "\'.\
+            <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>\
           </div>';
         $results.prepend(alertHtml);
         return;
       }
 
-      // Build the requested card row HTML and add it to the page
-      const cardRowHtml =
-        '<div class="col-12 col-md-6 col-lg-4">\
-                <div class="card p-0 d-flex flex-row align-items-start h-100">\
-                    <img src="https://placehold.co/150x200" alt="Placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
-                    <div class="p-2">\
-                        <h5 class="card-title">Card title</h5>\
-                        <p class="card-text ">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>\
-                        <a href="#" class="btn btn-primary btn">Go somewhere</a>\
-                    </div>\
-                </div>\
-            </div>';
+      // Build a row of cards (one per match) and add it to the page
+      let rowHtml = '<div class="row g-3">';
+      for (let i = 0; i < matches.length; i++) {
+        const m = matches[i].member;
+        const t = matches[i].term;
+        const fullName = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || 'Unknown';
+        const party = (t && t.party) ? t.party : '';
+        const state = (t && t.state) ? t.state : '';
+        const website = (t && t.url) ? t.url : '#';
+        const phone = (t && t.phone) ? t.phone : '';
 
-      $results.append(cardRowHtml);
+        rowHtml +=
+          '<div class="col-12 col-md-6 col-lg-4">\
+            <div class="card p-0 d-flex flex-row align-items-start h-100">\
+              <img src="https://placehold.co/150x200" alt="Portrait placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
+              <div class="p-2">\
+                <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
+                <p class="card-text mb-2">' + $('<div>').text(party + (state ? ' • ' + state : '')).html() + '</p>\
+                <div class="d-flex gap-2">\
+                  <a href="' + website + '" target="_blank" class="btn btn-primary btn"><i class=\"fa-solid fa-globe\"></i></a>\
+                  ' + (phone ? '<a href=\"tel:' + phone.replace(/[^\d]/g,'') + '\" class=\"btn btn-outline-primary btn\"><i class=\"fa-solid fa-phone\"></i></a>' : '') + '\
+                </div>\
+              </div>\
+            </div>\
+          </div>';
+      }
+      rowHtml += '</div>';
+
+      $results.append(rowHtml);
     };
   });
 </script>
