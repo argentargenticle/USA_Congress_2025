@@ -173,10 +173,9 @@
               <img src="https://placehold.co/150x200" alt="Portrait placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
               <div class="p-2">\
                 <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
+                <span class="card-text mb-2 badge text-bg-primary">' + $('<div>').text(party).html() + '</span>\
                 <p class="card-text mb-2">' + $('<div>').text(
-                  party +
-                  (state ? ' • ' + state : '') +
-                  (district !== null ? '-' + district : '')
+                  (state ? state : '') + (district !== null ? '-' + district : '')
                 ).html() + '</p>\
                 <p class="text-muted mb-2">' + $('<div>').text(chamber).html() + '</p>\
                 <button type="button" class="btn btn-primary">More Info</button>\
