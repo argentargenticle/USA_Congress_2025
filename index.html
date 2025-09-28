@@ -97,9 +97,10 @@
                             (member.name['official_full'] || 
                              (member.name.first && member.name.last ? 
                               `${member.name.first} ${member.name.last}` : '')) || '').toLowerCase();
-                const state = member.terms?.[0]?.state?.toLowerCase() || '';
-                const district = member.terms?.[0]?.district ? `district ${member.terms[0].district}` : '';
-                const party = member.terms?.[0]?.party?.toLowerCase() || '';
+                const firstTerm = member && member['terms'] && member['terms'][0] ? member['terms'][0] : {};
+                const state = firstTerm['state'] ? String(firstTerm['state']).toLowerCase() : '';
+                const district = firstTerm['district'] ? `district ${firstTerm['district']}` : '';
+                const party = firstTerm['party'] ? String(firstTerm['party']).toLowerCase() : '';
                 const searchLower = searchTerm.toLowerCase().trim();
                 
                 return name.includes(searchLower) || 
