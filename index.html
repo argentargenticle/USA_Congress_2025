@@ -164,6 +164,7 @@
         const fullName = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || 'Unknown';
         const party = (t && t['party']) ? t['party'] : '';
         const state = (t && t.state) ? t.state : '';
+        const district = (t && (typeof t.district !== 'undefined')) ? t.district : null;
 
         rowHtml +=
           '<div class="col-12 col-md-6 col-lg-4">\
@@ -171,7 +172,11 @@
               <img src="https://placehold.co/150x200" alt="Portrait placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
               <div class="p-2">\
                 <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
-                <p class="card-text mb-2">' + $('<div>').text(party + (state ? ' • ' + state : '')).html() + '</p>\
+                <p class="card-text mb-2">' + $('<div>').text(
+                  party +
+                  (state ? ' • ' + state : '') +
+                  (district !== null ? '-' + district : '')
+                ).html() + '</p>\
                 <button type="button" class="btn btn-primary">More Info</button>\
               </div>\
             </div>\
