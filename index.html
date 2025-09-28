@@ -172,6 +172,12 @@
           if (p.startsWith('rep')) return 'text-bg-danger';
           return 'text-bg-secondary';
         })();
+        const btnClass = (function () {
+          const p = (party || '').toLowerCase();
+          if (p.startsWith('dem')) return 'btn-primary';
+          if (p.startsWith('rep')) return 'btn-danger';
+          return 'btn-secondary';
+        })();
 
         rowHtml +=
           '<div class="col-12 col-md-6 col-lg-4">\
@@ -184,7 +190,7 @@
                   (state ? state : '') + (district !== null ? '-' + district : '')
                 ).html() + '</p>\
                 <p class="text-muted mb-2">' + $('<div>').text(chamber).html() + '</p>\
-                <button type="button" class="btn btn-primary">More Info</button>\
+                <button type="button" class="btn ' + btnClass + '">More Info</button>\
               </div>\
             </div>\
           </div>';
