@@ -13,17 +13,117 @@
     <nav class="w3-bar w3-theme-d5">
         <a href="#" class="w3-bar-item w3-button w3-mobile">Home</a>
         <label>
-            <input type="text" class="w3-bar-item w3-input w3-mobile" placeholder="Search">
+            <input type="text" id="searchInput" class="w3-bar-item w3-input w3-mobile" placeholder="Search">
         </label>
         <a href="#" class="w3-bar-item w3-button w3-deep-purple w3-mobile">Search</a>
     </nav>
+    
     <div class="w3-container">
-        <h2>Display Congress Members</h2>
-        <p>Use the search bar above to find specific members of congress. You can search by name or state. Once you find a member, click on their name to view their profile.</p>
-        <p>Each member of congress has a profile which includes their name, state, committees they are a part of, and their position in the hemicycle.</p>
+        <div id="loading" class="w3-container">
+            <h2>Display Congress Members</h2>
+            <p>Use the search bar above to find specific members of congress. You can search by name or state. Once you find a member, click on their name to view their profile.</p>
+            <p>Each member of congress has a profile which includes their name, state, committees they are a part of, and their position in the hemicycle.</p>
+        </div>
+        <div id="membersContainer" class="w3-grid-padding w3-padding-16" style="grid-template-columns:auto auto auto">
+            <!-- Members will be loaded here -->
+        </div>
     </div>
-    <footer class="w3-container w3-theme-d5 w3-bottom">
+    <footer class="w3-container w3-theme-d5">
         <p>Created by Argenticle &copy; 2025</p>
     </footer>
+
+    <script>
+    $(document).ready(function() {
+        const API_KEY = 'EnNgUKjRt1I9AHGiQUPJ2U01p10h1ccB0MtcnXvm';
+        
+        // Load members on page load
+        loadMembers();
+        
+        // Search functionality
+        $('#searchBtn').click(loadMembers);
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) loadMembers();
+        });
+        
+        function loadMembers() {
+            const searchTerm = $('#searchInput').val().toLowerCase();
+            $('#loading').show();
+
+            $.ajax({
+                url: 'https://api.congress.gov/v3/member',
+                method: 'GET',
+                data: {
+                    congress: '119',
+                    current_member: 'true',
+                    chamber: 'house',
+                    api_key: API_KEY
+                },
+                success: function(response) {
+                    console.log('API Response:', response); // Log the full API response
+                    if (response?.members) {
+                        console.log('Members data:', response.members[0]); // Log the first member's data
+                        displayMembers(response.members, searchTerm);
+                    } else {
+                        console.error('No members found in response:', response);
+                    }
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                    $('#membersContainer').html('<div class="w3-panel w3-red">Error loading members</div>');
+                },
+                complete: function() {
+                    $('#loading').hide();
+                }
+            });
+        }
+
+        function displayMembers(members, searchTerm = '') {
+            const $container = $('#membersContainer');
+            $container.empty();
+
+            const filtered = members.filter(member => {
+                if (!searchTerm) return true;
+                const name = `${member.firstName || ''} ${member.lastName || ''}`.toLowerCase();
+                return name.includes(searchTerm) ||
+                       (member.state || '').toLowerCase().includes(searchTerm);
+            });
+
+            if (filtered.length === 0) {
+                $container.html('<div class="w3-panel w3-yellow">No members found</div>');
+                return;
+            }
+
+            filtered.forEach(member => {
+                console.log('Processing member:', member);
+                // Format name from 'Last, First' to 'First Last'
+                let name = 'Unknown Member';
+                if (member.name) {
+                    const nameParts = member.name.split(',').map(part => part.trim());
+                    name = nameParts.length > 1 ? 
+                        `${nameParts[1]} ${nameParts[0]}` : 
+                        nameParts[0];
+                }
+                const card = `
+                   <div class="w3-card-2 w3-hover-shadow w3-padding" style="display: flex; align-items: center;">
+                        <div class="w3-margin-right" style="flex: 0 0 auto;">
+                            <img class="w3-round-xlarge w3-image" src="https://placehold.co/160x200/000000/FFFFFF/png" alt="${name}" style="width: 160px; height: 200px; object-fit: cover;">
+                        </div>
+                        <div class="w3-padding" style="flex: 1; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                            <div class="w3-center w3-white">
+                                <header class="w3-container">
+                                    <h4>${name}</h4>
+                                </header>
+                                <p>${member.partyName || member.party || 'Unknown'} - ${member.state || 'N/A'}</p>
+                                <p>${member.district ? `District ${member.district}` : 'At-Large'}</p>
+                                <a href="#"class="w3-button w3-round-large w3-purple">More Info</a>
+                            </div>
+                       </div>
+                   </div>
+                `;
+                $container.append(card);
+            });
+        }
+    });
+    </script>
 </body>
 </html>
