@@ -164,8 +164,6 @@
         const fullName = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || 'Unknown';
         const party = (t && t['party']) ? t['party'] : '';
         const state = (t && t.state) ? t.state : '';
-        const website = (t && t.url) ? t.url : '#';
-        const phone = (t && t.phone) ? t.phone : '';
 
         rowHtml +=
           '<div class="col-12 col-md-6 col-lg-4">\
@@ -174,10 +172,7 @@
               <div class="p-2">\
                 <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
                 <p class="card-text mb-2">' + $('<div>').text(party + (state ? ' • ' + state : '')).html() + '</p>\
-                <div class="d-flex gap-2">\
-                  <a href="' + website + '" target="_blank" class="btn btn-primary btn"><i class=\"fa-solid fa-globe\"></i></a>\
-                  ' + (phone ? '<a href=\"tel:' + phone.replace(/\D/g,'') + '\" class=\"btn btn-outline-primary btn\"><i class=\"fa-solid fa-phone\"></i></a>' : '') + '\
-                </div>\
+                <button type="button" class="btn btn-primary">More Info</button>\
               </div>\
             </div>\
           </div>';
