@@ -58,18 +58,18 @@
             $.ajax({
                 url: 'https://unitedstates.github.io/congress-legislators/legislators-current.json',
                 method: 'GET',
-                dataType: 'json',
-                success: function(response) {
-                    if (response && response.length > 0) {
-                        displayMembers(response, searchTerm);
-                    }
-                },
-                error: function(error) {
-                    $('#membersContainer').html('<div class="w3-panel w3-red">Error loading members</div>');
-                },
-                complete: function() {
-                    $('#loading').hide();
+                dataType: 'json'
+            })
+            .done(function(response) {
+                if (response && response.length > 0) {
+                    displayMembers(response, searchTerm);
                 }
+            })
+            .fail(function(error) {
+                $('#membersContainer').html('<div class="w3-panel w3-red">Error loading members</div>');
+            })
+            .always(function() {
+                $('#loading').hide();
             });
         }
 
