@@ -113,10 +113,10 @@
         if (data) {
           const q = query.toLowerCase();
           representativeFound = data.some(function (m) {
-            const full = (m.name && (m.name.official_full || (m.name.first + ' ' + m.name.last))) || '';
+            const full = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || '';
             const nameMatch = full.toLowerCase().includes(q);
             if (!nameMatch) return false;
-            const terms = Array.isArray(m.terms) ? m.terms : [];
+            const terms = Array.isArray(m['terms']) ? m['terms'] : [];
             if (!terms.length) return false;
             const lastTerm = terms[terms.length - 1];
             return lastTerm.type === 'rep';
