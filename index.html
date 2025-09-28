@@ -164,7 +164,7 @@
         const fullName = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || 'Unknown';
         const party = (t && t['party']) ? t['party'] : '';
         const state = (t && t.state) ? t.state : '';
-        const district = (t && (typeof t.district !== 'undefined')) ? t.district : null;
+        const district = (t && (typeof t['district'] !== 'undefined')) ? t['district'] : null;
         const chamber = (t && t.type === 'sen') ? 'Senate' : 'House';
 
         rowHtml +=
