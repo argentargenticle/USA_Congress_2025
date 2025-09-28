@@ -54,16 +54,11 @@
                 method: 'GET',
                 dataType: 'json',
                 success: function(response) {
-                    console.log('API Response:', response); // Log the full API response
                     if (response && response.length > 0) {
-                        console.log('Members data:', response[0]); // Log the first member's data
                         displayMembers(response, searchTerm);
-                    } else {
-                        console.error('No members found in response:', response);
                     }
                 },
                 error: function(error) {
-                    console.error('Error:', error);
                     $('#membersContainer').html('<div class="w3-panel w3-red">Error loading members</div>');
                 },
                 complete: function() {
@@ -89,7 +84,6 @@
             }
 
             filtered.forEach(member => {
-                console.log('Processing member:', member);
                 // Format name from the API response
                 const name = member.name?.official_full || 
                            (member.name?.first && member.name?.last ? 
