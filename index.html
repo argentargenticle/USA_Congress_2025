@@ -83,6 +83,24 @@
       // Clear previous results for new search
       $results.empty();
 
+      // Load dataset on demand (first search) then rerun
+      if (!window.congress || !Array.isArray(window.congress.legislators)) {
+        $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
+          .done(function (data) {
+            window.congress = window.congress || {};
+            window.congress.legislators = data;
+            // Re-run now that data is available
+            handleSearch(query);
+          })
+          .fail(function (xhr) {
+            const msg = (xhr && xhr.status === 404)
+              ? 'Dataset not found (404).'
+              : (xhr && xhr.status === 0 ? 'Cannot load dataset (blocked/offline).' : 'Failed to load dataset.');
+            $results.prepend('<div class="alert alert-danger mt-3" role="alert">' + msg + '</div>');
+          });
+        return;
+      }
+
       // Step 1: If we cannot find a Representative for the query, show a danger alert and stop.
       // Try to use loaded dataset if available on window.congress.legislators
       let representativeFound = false;
