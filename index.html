@@ -52,19 +52,8 @@
         <p>Edit this content to get started.</p>
     </section>
 
-    <div class="row g-3">
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card p-0 d-flex flex-row align-items-start h-100">
-                <img src="https://placehold.co/150x200" alt="Placeholder" width="150" height="200"
-                     class="flex-shrink-0 rounded-start me-2">
-                <div class="p-2">
-                    <h5 class="card-title">Card title</h5>
-                    <p class="card-text ">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
-                    <a href="#" class="btn btn-primary btn">Go somewhere</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Search results will be injected here -->
+    <div id="searchResults" class="container g-3"></div>
 </main>
 <footer class="container py-3 text-muted border-top">
     <small>Argenticle @Copyright 2025 </small>
@@ -74,18 +63,40 @@
   $(function () {
     $('#navbarSearchForm').on('submit', function (e) {
       e.preventDefault();
-      var query = $('#navbarSearchInput').val().trim();
+      const query = $('#navbarSearchInput').val().trim();
       handleSearch(query);
     });
 
     // Placeholder you can customize. Replace with your real logic.
     window.handleSearch = function (query) {
+      const $results = $('#searchResults');
       if (!query) {
-        console.log('Search query is empty');
+        const alertHtml =
+          '<div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">\
+            Please enter a search term.\
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+          </div>';
+        $results.prepend(alertHtml);
+        $('#navbarSearchInput').trigger('focus');
         return;
       }
-      console.log('Searching for:', query);
-      // TODO: add your AJAX/navigation logic here
+      // Clear previous results for new search
+      $results.empty();
+
+      // Build the requested card row HTML and add it to the page
+      const cardRowHtml =
+        '<div class="col-12 col-md-6 col-lg-4">\
+                <div class="card p-0 d-flex flex-row align-items-start h-100">\
+                    <img src="https://placehold.co/150x200" alt="Placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
+                    <div class="p-2">\
+                        <h5 class="card-title">Card title</h5>\
+                        <p class="card-text ">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>\
+                        <a href="#" class="btn btn-primary btn">Go somewhere</a>\
+                    </div>\
+                </div>\
+            </div>';
+
+      $results.append(cardRowHtml);
     };
   });
 </script>
