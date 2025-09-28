@@ -83,6 +83,37 @@
       // Clear previous results for new search
       $results.empty();
 
+      // Step 1: If we cannot find a Representative for the query, show a danger alert and stop.
+      // Try to use loaded dataset if available on window.congress.legislators
+      let representativeFound = false;
+      try {
+        const data = (window.congress && Array.isArray(window.congress.legislators)) ? window.congress.legislators : null;
+        if (data) {
+          const q = query.toLowerCase();
+          representativeFound = data.some(function (m) {
+            const full = (m.name && (m.name.official_full || (m.name.first + ' ' + m.name.last))) || '';
+            const nameMatch = full.toLowerCase().includes(q);
+            if (!nameMatch) return false;
+            const terms = Array.isArray(m.terms) ? m.terms : [];
+            if (!terms.length) return false;
+            const lastTerm = terms[terms.length - 1];
+            return lastTerm.type === 'rep';
+          });
+        }
+      } catch (e) {
+        representativeFound = false;
+      }
+
+      if (!representativeFound) {
+        const alertHtml =
+          '<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">\
+            No Representative found for \'' + $('<div>').text(query).html() + '\'.\
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+          </div>';
+        $results.prepend(alertHtml);
+        return;
+      }
+
       // Build the requested card row HTML and add it to the page
       const cardRowHtml =
         '<div class="col-12 col-md-6 col-lg-4">\
