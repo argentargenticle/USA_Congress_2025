@@ -111,11 +111,27 @@
       try {
         const data = (window.congress && Array.isArray(window.congress.legislators)) ? window.congress.legislators : null;
         if (data) {
-          const q = query.toLowerCase();
+          const normalize = function (s) { return (s || '').toLowerCase().replace(/[^a-z]/g, ''); };
+          const qNorm = normalize(query);
+          const qParts = query.trim().toLowerCase().split(/\s+/);
+          const qFirst = normalize(qParts[0] || '');
+          const qLast = normalize(qParts[qParts.length - 1] || '');
+
           representativeFound = data.some(function (m) {
-            const full = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || '';
-            const nameMatch = full.toLowerCase().includes(q);
+            const first = (m.name && m.name.first) || '';
+            const last = (m.name && m.name.last) || '';
+            const official = (m.name && m.name['official_full']) || '';
+            const fullPref = official || (first + ' ' + last);
+
+            const candFull = normalize(fullPref);
+            const candFirstLast = normalize(first + ' ' + last);
+
+            const nameMatch =
+              candFull.indexOf(qNorm) !== -1 ||
+              candFirstLast.indexOf(qNorm) !== -1 ||
+              (qFirst && qLast && candFull.indexOf(qFirst) !== -1 && candFull.indexOf(qLast) !== -1);
             if (!nameMatch) return false;
+
             const terms = Array.isArray(m['terms']) ? m['terms'] : [];
             if (!terms.length) return false;
             const lastTerm = terms[terms.length - 1];
