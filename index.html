@@ -50,19 +50,14 @@
             $('#loading').show();
 
             $.ajax({
-                url: 'https://api.congress.gov/v3/member',
+                url: 'https://unitedstates.github.io/congress-legislators/legislators-current.json',
                 method: 'GET',
-                data: {
-                    congress: '119',
-                    current_member: 'true',
-                    chamber: 'house',
-                    api_key: API_KEY
-                },
+                dataType: 'json',
                 success: function(response) {
                     console.log('API Response:', response); // Log the full API response
-                    if (response?.members) {
-                        console.log('Members data:', response.members[0]); // Log the first member's data
-                        displayMembers(response.members, searchTerm);
+                    if (response && response.length > 0) {
+                        console.log('Members data:', response[0]); // Log the first member's data
+                        displayMembers(response, searchTerm);
                     } else {
                         console.error('No members found in response:', response);
                     }
@@ -95,26 +90,23 @@
 
             filtered.forEach(member => {
                 console.log('Processing member:', member);
-                // Format name from 'Last, First' to 'First Last'
-                let name = 'Unknown Member';
-                if (member.name) {
-                    const nameParts = member.name.split(',').map(part => part.trim());
-                    name = nameParts.length > 1 ? 
-                        `${nameParts[1]} ${nameParts[0]}` : 
-                        nameParts[0];
-                }
+                // Format name from the API response
+                const name = member.name?.official_full || 
+                           (member.name?.first && member.name?.last ? 
+                           `${member.name.first} ${member.name.last}` : 
+                           'Unknown Member');
                 const card = `
                    <div class="w3-card-2 w3-hover-shadow w3-padding" style="display: flex; align-items: center;">
                         <div class="w3-margin-right" style="flex: 0 0 auto;">
-                            <img class="w3-round-xlarge w3-image" src="${member.depiction?.imageUrl || 'https://placehold.co/160x200/000000/FFFFFF/png'}" alt="${name}" style="width: 160px; height: 200px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/160x200/000000/FFFFFF/png'">
+                            <img class="w3-round-xlarge w3-image" src="${member.id?.bioguide ? `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide.charAt(0)}/${member.id.bioguide}.jpg` : 'https://placehold.co/160x200/000000/FFFFFF/png'}" alt="${name}" style="width: 160px; height: 200px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/160x200/000000/FFFFFF/png'">
                         </div>
                         <div class="w3-padding" style="flex: 1; display: flex; flex-direction: column; justify-content: center; height: 100%;">
                             <div class="w3-center w3-white">
                                 <header class="w3-container">
                                     <h4>${name}</h4>
                                 </header>
-                                <p>${member.partyName || member.party || 'Unknown'} - ${member.state || 'N/A'}</p>
-                                <p>${member.district ? `District ${member.district}` : 'At-Large'}</p>
+                                <p>${member.terms && member.terms.length > 0 ? member.terms[0].party : 'Unknown'} - ${member.terms && member.terms.length > 0 ? member.terms[0].state : 'N/A'}</p>
+                                <p>${member.terms && member.terms[0]?.district ? `District ${member.terms[0].district}` : 'At-Large'}</p>
                                 <a href="#"class="w3-button w3-round-large w3-black w3-hover-deep-purple">More Info</a>
                             </div>
                        </div>
