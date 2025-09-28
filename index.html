@@ -34,8 +34,8 @@
                     <a class="nav-link" href="#">Legislation</a>
                 </li>
             </ul>
-            <form class="d-flex ms-auto" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+            <form id="navbarSearchForm" class="d-flex ms-auto" role="search">
+                <input id="navbarSearchInput" class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
                 <button class="btn" style="--bs-btn-bg: #290661;" type="submit" aria-label="Search">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <span class="visually-hidden">Search</span>
@@ -69,5 +69,25 @@
 <footer class="container py-3 text-muted border-top">
     <small>Argenticle @Copyright 2025 </small>
 </footer>
+<script>
+  // jQuery: handle search submit from button click or Enter key
+  $(function () {
+    $('#navbarSearchForm').on('submit', function (e) {
+      e.preventDefault();
+      var query = $('#navbarSearchInput').val().trim();
+      handleSearch(query);
+    });
+
+    // Placeholder you can customize. Replace with your real logic.
+    window.handleSearch = function (query) {
+      if (!query) {
+        console.log('Search query is empty');
+        return;
+      }
+      console.log('Searching for:', query);
+      // TODO: add your AJAX/navigation logic here
+    };
+  });
+</script>
 </body>
 </html>
