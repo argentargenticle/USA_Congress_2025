@@ -165,6 +165,7 @@
         const party = (t && t['party']) ? t['party'] : '';
         const state = (t && t.state) ? t.state : '';
         const district = (t && (typeof t.district !== 'undefined')) ? t.district : null;
+        const chamber = (t && t.type === 'sen') ? 'Senate' : 'House';
 
         rowHtml +=
           '<div class="col-12 col-md-6 col-lg-4">\
@@ -177,6 +178,7 @@
                   (state ? ' • ' + state : '') +
                   (district !== null ? '-' + district : '')
                 ).html() + '</p>\
+                <p class="text-muted mb-2">' + $('<div>').text(chamber).html() + '</p>\
                 <button type="button" class="btn btn-primary">More Info</button>\
               </div>\
             </div>\
