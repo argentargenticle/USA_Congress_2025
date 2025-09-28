@@ -96,7 +96,7 @@
                            `${member.name.first} ${member.name.last}` : 
                            'Unknown Member');
                 const card = `
-                   <div class="w3-card-2 w3-hover-shadow w3-gray" style="display: flex; align-items: center;">
+                   <div class="w3-card-2 w3-hover-shadow ${member.terms?.[0]?.party === 'Democrat' ? 'w3-blue' : member.terms?.[0]?.party === 'Republican' ? 'w3-red' : 'w3-purple'}" style="display: flex; align-items: center;">
                         <div class="w3-margin-right w3-margin" style="flex: 0 0 auto;">
                             <img class="w3-round-xlarge w3-image" src="${member.id?.bioguide ? `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide.charAt(0)}/${member.id.bioguide}.jpg` : 'https://placehold.co/160x200/000000/FFFFFF/png'}" alt="${name}" style="width: 160px; height: 200px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/160x200/000000/FFFFFF/png'">
                         </div>
