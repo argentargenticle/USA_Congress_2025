@@ -166,6 +166,10 @@
         const state = (t && t.state) ? t.state : '';
         const district = (t && (typeof t['district'] !== 'undefined')) ? t['district'] : null;
         const chamber = (t && t.type === 'sen') ? 'Senate' : 'House';
+        const bioguide = (m.id && m.id.bioguide) ? m.id.bioguide : null;
+        const imgSrc = (chamber === 'House' && bioguide)
+          ? ('https://clerk.house.gov/images/members/' + bioguide + '.jpg')
+          : 'https://placehold.co/150x200';
         const partyClass = (function () {
           const p = (party || '').toLowerCase();
           if (p.startsWith('dem')) return 'text-bg-primary';
@@ -182,7 +186,7 @@
         rowHtml +=
           '<div class="col-12 col-md-6 col-lg-4">\
             <div class="card p-0 d-flex flex-row align-items-start h-100">\
-              <img src="https://placehold.co/150x200" alt="Portrait placeholder" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
+              <img src="' + imgSrc + '" alt="Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">\
               <div class="p-2">\
                 <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
                 <span class="card-text mb-2 badge ' + partyClass + '">' + $('<div>').text(party).html() + '</span>\
