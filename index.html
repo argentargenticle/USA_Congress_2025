@@ -167,9 +167,15 @@
         const district = (t && (typeof t['district'] !== 'undefined')) ? t['district'] : null;
         const chamber = (t && t.type === 'sen') ? 'Senate' : 'House';
         const bioguide = (m.id && m.id.bioguide) ? m.id.bioguide : null;
-        const imgSrc = (chamber === 'House' && bioguide)
-          ? ('https://clerk.house.gov/images/members/' + bioguide + '.jpg')
-          : 'https://placehold.co/150x200';
+        const imgSrc = (function () {
+          if (bioguide && chamber === 'House') {
+            return 'https://clerk.house.gov/images/members/' + bioguide + '.jpg';
+          }
+          if (bioguide && chamber === 'Senate') {
+            return 'https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/' + bioguide + '.jpg';
+          }
+          return 'https://placehold.co/150x200';
+        })();
         const partyClass = (function () {
           const p = (party || '').toLowerCase();
           if (p.startsWith('dem')) return 'text-bg-primary';
@@ -190,10 +196,10 @@
               <div class="p-2">\
                 <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>\
                 <span class="card-text mb-2 badge ' + partyClass + '">' + $('<div>').text(party).html() + '</span>\
+                <p class="text-muted mb-2">' + $('<div>').text(chamber).html() + '</p>\
                 <p class="card-text mb-2">' + $('<div>').text(
                   (state ? state : '') + (district !== null ? '-' + district : '')
                 ).html() + '</p>\
-                <p class="text-muted mb-2">' + $('<div>').text(chamber).html() + '</p>\
                 <button type="button" class="btn ' + btnClass + '">More Info</button>\
               </div>\
             </div>\
