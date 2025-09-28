@@ -71,7 +71,7 @@
                     displayMembers(response, searchTerm);
                 }
             })
-            .fail(function(error) {
+            .fail(function() {
                 $membersContainer.html('<div class="w3-panel w3-red">Error loading members</div>');
             })
             .always(function() {
@@ -121,8 +121,11 @@
                 const card = `
                    <div class="w3-card-2 w3-hover-shadow ${member.terms?.[0]?.party === 'Democrat' ? 'w3-blue' : member.terms?.[0]?.party === 'Republican' ? 'w3-red' : 'w3-purple'}" style="display: flex; align-items: center;">
                         <div class="w3-margin-right w3-margin" style="flex: 0 0 auto;">
-                            <img class="w3-round-xlarge w3-image" src="${member.id?.bioguide ?
-                    `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide.charAt(0)}/${member.id.bioguide}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" alt="${name}" style="width: auto; height: 240px; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/160x200/000000/FFFFFF/png'">
+                            <img class="w3-round-xlarge w3-image member-photo" 
+                                src="${member.id?.bioguide ? `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide.charAt(0)}/${member.id.bioguide}.jpg` : 'https://placehold.co/200x240/000000/FFFFFF/png'}" 
+                                alt="${name}" 
+                                style="width: auto; height: 240px; object-fit: cover;"
+                                data-fallback-src="https://placehold.co/160x200/000000/FFFFFF/png">
                         </div>
                         <div class="w3-padding" style="flex: 1; display: flex; flex-direction: column; justify-content: center; height: 100%;">
                             <div class="w3-center w3-white w3-margin w3-padding-16 w3-round-xlarge">
@@ -140,6 +143,16 @@
                    </div>
                 `;
                 $membersContainer.append(card);
+            });
+            
+            // Add error handling for member photos
+            document.querySelectorAll('.member-photo').forEach(img => {
+                img.addEventListener('error', function() {
+                    const fallbackSrc = this.getAttribute('data-fallback-src');
+                    if (this.src !== fallbackSrc) {
+                        this.src = fallbackSrc;
+                    }
+                });
             });
         }
     });
