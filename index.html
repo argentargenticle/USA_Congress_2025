@@ -149,8 +149,8 @@
         const safeQuery = $('<div>').text(query).html();
         const alertHtml =
           '<div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">\
-            No members found for \'" + safeQuery + "\'.\
-            <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>\
+            No members found for \'' + safeQuery + '\'.\
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
           </div>';
         $results.prepend(alertHtml);
         return;
@@ -162,7 +162,7 @@
         const m = matches[i].member;
         const t = matches[i].term;
         const fullName = (m.name && (m.name['official_full'] || (m.name.first + ' ' + m.name.last))) || 'Unknown';
-        const party = (t && t.party) ? t.party : '';
+        const party = (t && t['party']) ? t['party'] : '';
         const state = (t && t.state) ? t.state : '';
         const website = (t && t.url) ? t.url : '#';
         const phone = (t && t.phone) ? t.phone : '';
@@ -176,7 +176,7 @@
                 <p class="card-text mb-2">' + $('<div>').text(party + (state ? ' • ' + state : '')).html() + '</p>\
                 <div class="d-flex gap-2">\
                   <a href="' + website + '" target="_blank" class="btn btn-primary btn"><i class=\"fa-solid fa-globe\"></i></a>\
-                  ' + (phone ? '<a href=\"tel:' + phone.replace(/[^\d]/g,'') + '\" class=\"btn btn-outline-primary btn\"><i class=\"fa-solid fa-phone\"></i></a>' : '') + '\
+                  ' + (phone ? '<a href=\"tel:' + phone.replace(/\D/g,'') + '\" class=\"btn btn-outline-primary btn\"><i class=\"fa-solid fa-phone\"></i></a>' : '') + '\
                 </div>\
               </div>\
             </div>\
