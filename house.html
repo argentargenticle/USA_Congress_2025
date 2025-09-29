@@ -51,7 +51,23 @@
         <div class="col-12 text-center">
             <h2>U.S. House of Representatives</h2>
             <span class="lead">Current Party Composition</span>
-<!--            TODO: Put the card (aka copy the card from index.html) here-->
+<!--            TODO: 1) Put the card (reference below from lines 55 to 68)
+           <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-0 d-flex flex-row align-items-start h-100">
+              <img src="' + imgSrc + '" alt="Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
+              <div class="p-2">
+                <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>
+                <span class="card-text mb-2 badge ' + partyClass + '">' + $('<div>').text(party).html() + '</span>
+                <p class="text-muted mb-2"><i class="fas ' + (chamber === 'Senate' ? 'fa-scale-balanced' : 'fa-landmark') + ' me-2"></i>' + $('<div>').text(chamber).html() + '</p>
+                <p class="card-text mb-2">' + $('<div>').text(
+                    (state ? getStateFullName(state) : '') + (district !== null ? ' - District ' + district : '')
+                ).html() + '</p>
+                <button type="button" class="btn ' + btnClass + '" onclick="window.location.href='representative.html?bioguide=' + bioguide + '&source=home'">More Info</button>
+              </div>
+            </div>
+          </div>
+-->
+        <!--     TODO: 2) When you click a seat/dot should open the card with that representative's info dot/seat you clicked on -->
         </div>
         <div class="col-12">
             <div class="chart-wrapper" style="width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden;">
