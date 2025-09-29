@@ -309,6 +309,10 @@
                     const opensecretsId = rep.id.opensecrets || '';
                     $('a:contains("OpenSecrets")').attr('href', `https://www.opensecrets.org/members-of-congress/${ballotpediaId}/summary?cid=${opensecretsId}&cycle=${currentYear}`);
                     
+                    // Set GovTrack link
+                    const govtrackId = rep.id.govtrack || '';
+                    $('a:contains("GovTrack")').attr('href', `https://www.govtrack.us/congress/members/${govtrackId}`);
+                    
                     // Update the representative's information
                     $('#representativeName').text(fullName);
                     $('#chamberInfo').text(latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate');
