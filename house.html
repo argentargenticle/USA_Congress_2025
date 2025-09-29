@@ -146,18 +146,18 @@
                 
                 houseMembers.forEach(member => {
                     // Skip if no bioguide ID exists or if we've seen this bioguide before
-                    if (!member.id?.bioguide || seenIds.has(member.id.bioguide)) {
+                    if (!member.id || !member.id['bioguide'] || seenIds.has(member.id['bioguide'])) {
                         return;
                     }
                     
-                    const term = member.terms[member.terms.length - 1];
+                    const term = member['terms'][member['terms'].length - 1];
                     
                     // Skip non-voting delegates (from territories)
                     if (nonVotingStates.includes(term.state)) {
                         return;
                     }
                     
-                    seenIds.add(member.id.bioguide);
+                    seenIds.add(member.id['bioguide']);
                     const termEnd = new Date(term.end);
                     
                     // Only include if term hasn't ended yet
@@ -166,7 +166,8 @@
                             party: term.party,
                             color: term.party === 'Democrat' ? '#0d6efd' : 
                                   (term.party === 'Republican' ? '#dc3545' : '#6c757d'),
-                            tooltip: `${member.name.first} ${member.name.last} (${term.party[0]}-${term.state}${term.district ? `-${term.district}` : ''})`
+                            tooltip:
+                                `${member.name.first} ${member.name.last} (${term.party[0]}-${term.state}${term['district'] ? `-${term['district']}` : ''})`
                         };
                         
                         if (term.party === 'Democrat') {
