@@ -34,14 +34,40 @@
     <small>Argenticle @Copyright 2025 </small>
 </footer>
 <script>
-    $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
-        .done(function(data) {
-            console.log('Legislators data:', data);
-            window.legislators = data; // Makes the data available globally
-        })
-        .fail(function(error) {
-            console.error('Error loading data:', error);
-        });
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    // Get bioguide ID from URL
+    const bioguideId = getUrlParameter('bioguide');
+    
+    if (bioguideId) {
+        $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
+            .done(function(data) {
+                // Find the representative with matching bioguide ID
+                const rep = data.find(rep => rep.id.bioguide === bioguideId);
+                
+                if (rep) {
+                    // Format the full name
+                    const name = rep.name;
+                    const fullName = `${name.first} ${name.middle ? name.middle + ' ' : ''}${name.last}${name.suffix ? ' ' + name.suffix : ''}`;
+                    
+                    // Update the welcome message
+                    $('h2').text(fullName);
+                } else {
+                    console.error('Representative not found with bioguide ID:', bioguideId);
+                    $('h2').text('Representative Not Found');
+                }
+            })
+            .fail(function(error) {
+                console.error('Error loading data:', error);
+                $('h2').text('Error Loading Data');
+            });
+    } else {
+        $('h2').text('No Representative Specified');
+    }
 </script>
 </body>
 </html>
