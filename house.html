@@ -237,17 +237,12 @@
                 // which already contains individual member data with colors and tooltips
                 const g = svg.append("g");
                 
-                // Calculate dynamic seat radius based on chart width
-                const baseWidth = 800; // Original design width
-                const baseRadius = 9;  // Original seat radius
-                const dynamicRadius = (chartWidth / baseWidth) * baseRadius;
-                
                 // Create and configure the parliament chart with the data
                 const chart = d3.parliamentChart(chartData, chartWidth)  // Pass data and dynamic width
-                    .sections(2)           // Set number of sections
-                    .sectionGap(40)        // Set gap between sections
-                    .seatRadius(dynamicRadius) // Dynamic seat radius
-                    .rowHeight(19 * (chartWidth / baseWidth)); // Scale row height proportionally
+                    .sections(2)      // Set number of sections
+                    .sectionGap(40)   // Set gap between sections
+                    .seatRadius(9)    // Set seat radius
+                    .rowHeight(19);   // Set row height
                 
                 // Apply the chart to the group
                 g.call(chart);
