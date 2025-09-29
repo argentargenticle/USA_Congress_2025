@@ -35,10 +35,16 @@
                             <div class="col-md-6">
                                 <p id="partyInfo" class="mb-1"><strong>Party:</strong> -</p>
                                 <p id="chamberInfo" class="mb-1"><strong>Chamber:</strong> -</p>
+                                <p id="chamberTime" class="mb-1"><strong>Time in Chamber:</strong> -</p>
+                                <p id="termInfo" class="mb-1"><strong>Term:</strong> -</p>
+                                <p id="congressTime" class="mb-1"><strong>Time in Congress:</strong> -</p>
                             </div>
                             <div class="col-md-6">
                                 <p id="stateInfo" class="mb-1"><strong>State:</strong> -</p>
                                 <p id="districtInfo" class="mb-1"><strong>District:</strong> -</p>
+                                <p id="birthdayInfo" class="mb-1"><strong>Birthday:</strong> -</p>
+                                <p id="ageInfo" class="mb-1"><strong>Age:</strong> -</p>
+                                <p id="termCountdown" class="mb-1"><strong>Term Ends In:</strong> -</p>
                             </div>
                         </div>
                     </div>
@@ -55,6 +61,70 @@
     function getUrlParameter(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
+    }
+
+    // Function to calculate age from birthdate
+    function calculateAge(birthdate) {
+        const birthDate = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    // Function to format date as Month Day, Year
+    function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+
+    // Function to calculate time in Congress
+    function getTimeInCongress(terms, currentTerm) {
+        const firstTerm = terms[0];
+        const startDate = new Date(firstTerm.start);
+        const today = new Date();
+        
+        let years = today.getFullYear() - startDate.getFullYear();
+        let months = today.getMonth() - startDate.getMonth();
+        
+        if (months < 0 || (months === 0 && today.getDate() < startDate.getDate())) {
+            years--;
+            months += 12;
+        }
+        
+        return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
+    }
+
+    // Function to calculate time in current chamber
+    function getTimeInChamber(terms, currentTerm) {
+        const chamberTerms = terms.filter(term => term.type === currentTerm.type);
+        return getTimeInCongress(chamberTerms, currentTerm);
+    }
+
+    // Function to calculate time until term ends
+    function getTermCountdown(endDate) {
+        const end = new Date(endDate);
+        const today = new Date();
+        
+        if (end < today) return 'Term has ended';
+        
+        const diffTime = end - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays > 365) {
+            const years = Math.floor(diffDays / 365);
+            const months = Math.floor((diffDays % 365) / 30);
+            return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
+        } else if (diffDays > 30) {
+            const months = Math.floor(diffDays / 30);
+            const days = diffDays % 30;
+            return `${months} month${months !== 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
+        } else {
+            return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+        }
     }
 
     // Get URL parameters
@@ -83,13 +153,37 @@
                         `${name.first} ${name['middle'] ? name['middle'] + ' ' : ''}${name.last}${name.suffix
                         ? ' ' + name.suffix : ''}`;
                     
+                    // Calculate additional information
+                    const birthdate = rep.bio.birthday;
+                    const age = calculateAge(birthdate);
+                    const termStart = new Date(latestTerm.start).getFullYear();
+                    const termEnd = new Date(latestTerm.end).getFullYear();
+                    
+                    // Format birthday as "Day, Month Day, Year" (e.g., "Monday, January 15, 1970")
+                    const birthdayDate = new Date(birthdate);
+                    const birthdayFormatted = birthdayDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    
+                    // Calculate time in current chamber
+                    const timeInChamber = getTimeInChamber(rep.terms, latestTerm);
+                    
                     // Update the representative's information
                     $('#representativeName').text(fullName);
                     $('#partyInfo').html(`<strong>Party:</strong> ${latestTerm['party']}`);
                     $('#chamberInfo').html(`<strong>Chamber:</strong> ${latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate'}`);
+                    $('#chamberTime').html(`<strong>Time in Chamber:</strong> ${timeInChamber}`);
+                    $('#termInfo').html(`<strong>Term:</strong> ${termStart} - ${termEnd}`);
+                    $('#congressTime').html(`<strong>Time in Congress:</strong> ${getTimeInCongress(rep.terms, latestTerm)}`);
                     $('#stateInfo').html(`<strong>State:</strong> ${getStateFullName(latestTerm.state)}`);
                     const district = latestTerm['district'] ? `District ${latestTerm['district']}` : 'At-Large';
                     $('#districtInfo').html(`<strong>District:</strong> ${latestTerm.type === 'rep' ? district : 'N/A (Senator)'}`);
+                    $('#birthdayInfo').html(`<strong>Birthday:</strong> ${birthdayFormatted}`);
+                    $('#ageInfo').html(`<strong>Age:</strong> ${age}`);
+                    $('#termCountdown').html(`<strong>Term Ends In:</strong> ${getTermCountdown(latestTerm.end)}`);
                     
                     // Set profile image
                     const profileImageUrl = `https://clerk.house.gov/images/members/${bioguideId}.jpg`;
