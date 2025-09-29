@@ -119,23 +119,21 @@
                 // Prepare data for the chart
                 const chartData = [];
                 
-                // Add Republicans (left side)
-                for (let i = 0; i < repSeats; i++) {
+                // Add Republicans with their actual data (left side)
+                repMembers.forEach(member => {
                     chartData.push({
-                        color: '#dc3545',
-                        tooltip: 'Republican Representative'
+                        color: member.color,
+                        tooltip: member.tooltip
                     });
-                }
+                });
                 
-                // Add Democrats (right side)
-                for (let i = 0; i < demSeats; i++) {
+                // Add Democrats with their actual data (right side)
+                demMembers.forEach(member => {
                     chartData.push({
-                        color: '#0d6efd',
-                        tooltip: 'Democratic Representative'
+                        color: member.color,
+                        tooltip: member.tooltip
                     });
-                }
-                
-                // No vacancies shown in the chart, only in the count
+                });
                 
                 // House data for reference
                 const houseData = {
