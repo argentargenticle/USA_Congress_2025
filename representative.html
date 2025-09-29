@@ -24,72 +24,70 @@
 <main class="container mt-3">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div>
-                <div class="row g-0">
-                    <!-- Profile Image Column -->
-                    <div class="col-md-4 d-flex align-items-center justify-content-center p-4">
-                        <div class="text-center">
-                            <div class="position-relative d-inline-block mb-3">
-                                <img id="profileImage" src="" alt="Profile Image"
-                                     class="img-fluid rounded-5 border border-4 border-white shadow" style="width:
-                                     200px; height: auto; object-fit: cover;">
-                            </div>
-                            <h4 id="representativeName" class="mb-0 fw-bold">No Representative Specified</h4>
-                            <p id="chamberInfo" class="text-muted mb-0">-</p>
+            <div class="row g-0">
+                <!-- Profile Image Column -->
+                <div class="col-md-4 d-flex align-items-center justify-content-center p-4">
+                    <div class="text-center">
+                        <div class="position-relative d-inline-block mb-3">
+                            <img id="profileImage" src="" alt="Profile Image"
+                                 class="img-fluid rounded-5 border border-4 border-white shadow" style="width:
+                                 200px; height: auto; object-fit: cover;">
                         </div>
+                        <h4 id="representativeName" class="mb-0 fw-bold">No Representative Specified</h4>
+                        <p id="chamberInfo" class="text-muted mb-0">-</p>
                     </div>
-                    
-                    <!-- Information Column -->
-                    <div class="col-md-8">
-                        <div class="card-body p-4">
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <div class="card h-100 border-0 bg-light p-3 rounded-3">
-                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Official Information</h6>
-                                        <ul class="list-unstyled mb-0">
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-landmark"></i></span>
-                                                <span id="partyInfo"><strong>Party:</strong> -</span>
-                                            </li>
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-clock"></i></span>
-                                                <span id="termInfo"><strong>Term:</strong> -</span>
-                                            </li>
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-hourglass-half"></i></span>
-                                                <span id="congressTime"><strong>Time in Congress:</strong> -</span>
-                                            </li>
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-building-columns"></i></span>
-                                                <span id="chamberTime"><strong>Time in Chamber:</strong> -</span>
-                                            </li>
-                                            <li class="d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-calendar-check"></i></span>
-                                                <span id="termCountdown"><strong>Term Ends In:</strong> -</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                </div>
+
+                <!-- Information Column -->
+                <div class="col-md-8">
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 bg-light p-3 rounded-3">
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Official Information</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-landmark"></i></span>
+                                            <span id="partyInfo"><strong>Party:</strong> -</span>
+                                        </li>
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-clock"></i></span>
+                                            <span id="termInfo"><strong>Term:</strong> -</span>
+                                        </li>
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-hourglass-half"></i></span>
+                                            <span id="congressTime"><strong>Time in Congress:</strong> -</span>
+                                        </li>
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-building-columns"></i></span>
+                                            <span id="chamberTime"><strong>Time in Chamber:</strong> -</span>
+                                        </li>
+                                        <li class="d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-calendar-check"></i></span>
+                                            <span id="termCountdown"><strong>Term Ends In:</strong> -</span>
+                                        </li>
+                                    </ul>
                                 </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="card h-100 border-0 bg-light p-3 rounded-3">
-                                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Personal Details</h6>
-                                        <ul class="list-unstyled mb-0">
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-map-marker-alt"></i></span>
-                                                <span id="stateInfo"><strong>State:</strong> -</span>
-                                                <span id="districtInfo" class="ms-1"></span>
-                                            </li>
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-birthday-cake"></i></span>
-                                                <span id="birthdayInfo"><strong>Birthday:</strong> -</span>
-                                            </li>
-                                            <li class="mb-2 d-flex">
-                                                <span class="text-muted me-2"><i class="fas fa-user"></i></span>
-                                                <span id="ageInfo"><strong>Age:</strong> -</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 bg-light p-3 rounded-3">
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Personal Details</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-map-marker-alt"></i></span>
+                                            <span id="stateInfo"><strong>State:</strong> -</span>
+                                            <span id="districtInfo" class="ms-1"></span>
+                                        </li>
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-birthday-cake"></i></span>
+                                            <span id="birthdayInfo"><strong>Birthday:</strong> -</span>
+                                        </li>
+                                        <li class="mb-2 d-flex">
+                                            <span class="text-muted me-2"><i class="fas fa-user"></i></span>
+                                            <span id="ageInfo"><strong>Age:</strong> -</span>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
