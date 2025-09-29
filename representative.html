@@ -47,12 +47,14 @@
         $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
             .done(function(data) {
                 // Find the representative with matching bioguide ID
-                const rep = data.find(rep => rep.id.bioguide === bioguideId);
+                const rep = data.find(rep => rep.id['bioguide'] === bioguideId);
                 
                 if (rep) {
                     // Format the full name
                     const name = rep.name;
-                    const fullName = `${name.first} ${name.middle ? name.middle + ' ' : ''}${name.last}${name.suffix ? ' ' + name.suffix : ''}`;
+                    const fullName =
+                        `${name.first} ${name['middle'] ? name['middle'] + ' ' : ''}${name.last}${name.suffix
+                        ? ' ' + name.suffix : ''}`;
                     
                     // Update the welcome message
                     $('#representativeName').text(fullName);
