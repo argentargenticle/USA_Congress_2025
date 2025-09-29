@@ -27,7 +27,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 text-center mb-3 mb-md-0">
-                        <img id="profileImage" src="" alt="Profile Image" class="img-fluid rounded" style="max-height: 200px; width: auto;">
+                        <img id="profileImage" src="" alt="Profile Image" class="img-fluid rounded"
+                             style="max-height: 410px; width: auto;">
                     </div>
                     <div class="col-md-9">
                         <h2 id="representativeName" class="card-title">No Representative Specified</h2>
@@ -127,7 +128,8 @@
     
     // Update back button link if source is 'home'
     if (source === 'home') {
-        $('.nav-link[href="#"]').attr('href', 'index.html');
+        $('.btn-light span').text('Back to House');
+        $('.btn-light').attr('href', 'index.html');
     }
     
     if (bioguideId) {
