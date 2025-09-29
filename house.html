@@ -78,19 +78,33 @@
                 const response = await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
                 const legislators = await response.json();
                 
-                // Count House members by party
+                // Count House members by party and collect data
                 const partyCounts = { 'Democrat': 0, 'Republican': 0 };
+                const demMembers = [];
+                const repMembers = [];
                 
+                // Process all legislators
                 legislators.forEach(legislator => {
-                    // Sort terms by end date (newest first)
                     const sortedTerms = [...legislator.terms].sort((a, b) => 
                         new Date(b.end) - new Date(a.end)
                     );
                     const mostRecentTerm = sortedTerms[0];
                     
-                    // Only count if most recent term is in the House
                     if (mostRecentTerm.type === 'rep') {
-                        partyCounts[mostRecentTerm.party] = (partyCounts[mostRecentTerm.party] || 0) + 1;
+                        const party = mostRecentTerm.party;
+                        partyCounts[party] = (partyCounts[party] || 0) + 1;
+                        
+                        const memberInfo = {
+                            party: party,
+                            color: party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                            tooltip: `${legislator.name.first} ${legislator.name.last} (${party[0]}-${mostRecentTerm.state}${mostRecentTerm.district ? `-${mostRecentTerm.district}` : ''})`
+                        };
+                        
+                        if (party === 'Democrat') {
+                            demMembers.push(memberInfo);
+                        } else if (party === 'Republican') {
+                            repMembers.push(memberInfo);
+                        }
                     }
                 });
 
@@ -102,10 +116,24 @@
                     ]
                 };
 
-                // Prepare data for the chart
-                const chartData = houseData.parties.flatMap(party => 
-                    Array(party.seats).fill({ color: party.color })
-                );
+                // Prepare data for the chart - keep original order
+                const chartData = [];
+                
+                // Add Democrats first with their respective tooltips
+                demMembers.forEach(member => {
+                    chartData.push({
+                        color: member.color,
+                        tooltip: member.tooltip
+                    });
+                });
+                
+                // Then add Republicans with their respective tooltips
+                repMembers.forEach(member => {
+                    chartData.push({
+                        color: member.color,
+                        tooltip: member.tooltip
+                    });
+                });
 
                 // Update party counts in the legend while preserving HTML
                 const demSeats = houseData.parties[0].seats;
@@ -131,16 +159,46 @@
 
                 // Create and render the parliament chart
                 const chart = d3.select("#parliament-chart");
-                chart.append("svg")
+                const svg = chart.append("svg")
                     .attr("width", 800)
-                    .attr("height", 400)
-                    .append("g")
+                    .attr("height", 400);
+                
+                const g = svg.append("g")
                     .call(d3.parliamentChart(chartData, 800)
                         .seatRadius(9)
                         .sections(2)
                         .sectionGap(40)
                         .rowHeight(20)
                     );
+                
+                // Add tooltips
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0)
+                    .style("position", "absolute")
+                    .style("background", "white")
+                    .style("padding", "5px 10px")
+                    .style("border", "1px solid #ddd")
+                    .style("border-radius", "4px")
+                    .style("pointer-events", "none");
+                
+                g.selectAll("circle")
+                    .data(chartData)
+                    .on("mouseover", function(event, d) {
+                        if (d.tooltip) {
+                            tooltip.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                            tooltip.html(d.tooltip)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        }
+                    })
+                    .on("mouseout", function() {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
             } catch (error) {
                 console.error('Error loading legislator data:', error);
                 // Fallback to static data if fetch fails
