@@ -255,7 +255,13 @@
                     
                     // Set profile image with error handling
                     const profileImage = $('#profileImage');
-                    profileImage.attr('src', `https://clerk.house.gov/images/members/${bioguideId}.jpg`);
+                    if (latestTerm.type === 'sen') {
+                        // Use GitHub URL for senators
+                        profileImage.attr('src', `https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/main/${bioguideId}.jpg`);
+                    } else {
+                        // Use House URL for representatives
+                        profileImage.attr('src', `https://clerk.house.gov/images/members/${bioguideId}.jpg`);
+                    }
                     profileImage.on('error', function() {
                         $(this).attr('src', 'https://via.placeholder.com/300x400?text=No+Image+Available');
                     });
