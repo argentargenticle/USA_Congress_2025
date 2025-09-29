@@ -58,8 +58,8 @@
         <div class="col-12 mt-4">
             <div class="d-flex flex-column align-items-center gap-2">
                 <div class="d-flex gap-4">
-                    <div id="democrats-count"><i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats</div>
                     <div id="republicans-count"><i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans</div>
+                    <div id="democrats-count"><i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats</div>
                 </div>
                 <div id="total-seats" class="mt-2"></div>
             </div>
@@ -111,24 +111,24 @@
                 // U.S. House of Representatives data
                 const houseData = {
                     parties: [
-                        { color: "#0d6efd", seats: partyCounts['Democrat'], name: "Democrats" },
-                        { color: "#dc3545", seats: partyCounts['Republican'], name: "Republicans" }
+                        { color: "#dc3545", seats: partyCounts['Republican'], name: "Republicans" },
+                        { color: "#0d6efd", seats: partyCounts['Democrat'], name: "Democrats" }
                     ]
                 };
 
-                // Prepare data for the chart - keep original order
+                // Prepare data for the chart
                 const chartData = [];
                 
-                // Add Democrats first with their respective tooltips
-                demMembers.forEach(member => {
+                // Add Republicans first (left side)
+                repMembers.forEach(member => {
                     chartData.push({
                         color: member.color,
                         tooltip: member.tooltip
                     });
                 });
                 
-                // Then add Republicans with their respective tooltips
-                repMembers.forEach(member => {
+                // Then add Democrats (right side)
+                demMembers.forEach(member => {
                     chartData.push({
                         color: member.color,
                         tooltip: member.tooltip
