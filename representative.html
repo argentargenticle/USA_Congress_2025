@@ -244,10 +244,6 @@
                     profileImage.on('error', function() {
                         $(this).attr('src', 'https://via.placeholder.com/300x400?text=No+Image+Available');
                     });
-                    
-                    // Set profile image
-                    const profileImageUrl = `https://clerk.house.gov/images/members/${bioguideId}.jpg`;
-                    $('#profileImage').attr('src', profileImageUrl);
                 } else {
                     console.error('Representative not found with bioguide ID:', bioguideId);
                     $('#representativeName').text('Representative Not Found');
