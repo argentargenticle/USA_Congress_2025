@@ -82,9 +82,15 @@
                 const partyCounts = { 'Democrat': 0, 'Republican': 0 };
                 
                 legislators.forEach(legislator => {
-                    const term = legislator.terms[legislator.terms.length - 1];
-                    if (term.type === 'rep') {  // Only count House members
-                        partyCounts[term.party] = (partyCounts[term.party] || 0) + 1;
+                    // Sort terms by end date (newest first)
+                    const sortedTerms = [...legislator.terms].sort((a, b) => 
+                        new Date(b.end) - new Date(a.end)
+                    );
+                    const mostRecentTerm = sortedTerms[0];
+                    
+                    // Only count if most recent term is in the House
+                    if (mostRecentTerm.type === 'rep') {
+                        partyCounts[mostRecentTerm.party] = (partyCounts[mostRecentTerm.party] || 0) + 1;
                     }
                 });
 
