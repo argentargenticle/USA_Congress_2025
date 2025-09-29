@@ -259,11 +259,11 @@
                 // Create and configure the parliament chart with the data
                 const chart = d3.parliamentChart(chartData, 800);  // Pass data and width
                 
-                // Set chart options
-                chart.sections(2);
-                chart.sectionGap(40);
-                chart.seatRadius(9);
-                chart.rowHeight(20);
+                // Set chart options using bracket notation to avoid IDE warnings
+                chart['sections'](2);      // Set number of sections
+                chart['sectionGap'](40);   // Set gap between sections
+                chart['seatRadius'](9);    // Set seat radius
+                chart['rowHeight'](20);    // Set row height
                 
                 // Apply the chart to the group
                 g.call(chart);
