@@ -75,14 +75,8 @@
         return age;
     }
 
-    // Function to format date as Month Day, Year
-    function formatDate(dateString) {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString('en-US', options);
-    }
-
     // Function to calculate time in Congress
-    function getTimeInCongress(terms, currentTerm) {
+    function getTimeInCongress(terms) {
         const firstTerm = terms[0];
         const startDate = new Date(firstTerm.start);
         const today = new Date();
@@ -154,12 +148,12 @@
                         ? ' ' + name.suffix : ''}`;
                     
                     // Calculate additional information
-                    const birthdate = rep.bio.birthday;
-                    const age = calculateAge(birthdate);
+                    const birthdate = rep['bio'] ? rep['bio']['birthday'] : (rep['birthday'] || null);
+                    const age = birthdate ? calculateAge(birthdate) : 'N/A';
                     const termStart = new Date(latestTerm.start).getFullYear();
                     const termEnd = new Date(latestTerm.end).getFullYear();
                     
-                    // Format birthday as "Day, Month Day, Year" (e.g., "Monday, January 15, 1970")
+                    // Format birthday as "Day, Month Day, Year" (e.g., "Thursday, January 15, 1970")
                     const birthdayDate = new Date(birthdate);
                     const birthdayFormatted = birthdayDate.toLocaleDateString('en-US', { 
                         weekday: 'long', 
@@ -169,7 +163,7 @@
                     });
                     
                     // Calculate time in current chamber
-                    const timeInChamber = getTimeInChamber(rep.terms, latestTerm);
+                    const timeInChamber = getTimeInChamber(rep['terms'], latestTerm);
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
@@ -177,7 +171,8 @@
                     $('#chamberInfo').html(`<strong>Chamber:</strong> ${latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate'}`);
                     $('#chamberTime').html(`<strong>Time in Chamber:</strong> ${timeInChamber}`);
                     $('#termInfo').html(`<strong>Term:</strong> ${termStart} - ${termEnd}`);
-                    $('#congressTime').html(`<strong>Time in Congress:</strong> ${getTimeInCongress(rep.terms, latestTerm)}`);
+                    $('#congressTime').html(`<strong>Time in Congress:</strong> ${getTimeInCongress(rep['terms'],
+                        latestTerm)}`);
                     $('#stateInfo').html(`<strong>State:</strong> ${getStateFullName(latestTerm.state)}`);
                     const district = latestTerm['district'] ? `District ${latestTerm['district']}` : 'At-Large';
                     $('#districtInfo').html(`<strong>District:</strong> ${latestTerm.type === 'rep' ? district : 'N/A (Senator)'}`);
