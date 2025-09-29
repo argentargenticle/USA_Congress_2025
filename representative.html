@@ -72,9 +72,10 @@
                 // Find the representative with matching bioguide ID
                 const rep = data.find(rep => rep.id['bioguide'] === bioguideId);
                 
-                if (rep) {
+                if (rep && rep['terms'] && rep['terms'].length > 0) {
                     // Get the latest term
-                    const latestTerm = rep.terms[rep.terms.length - 1];
+                    const terms = rep['terms'];
+                    const latestTerm = terms[terms.length - 1];
                     
                     // Format the full name
                     const name = rep.name;
@@ -84,10 +85,10 @@
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
-                    $('#partyInfo').html(`<strong>Party:</strong> ${latestTerm.party}`);
+                    $('#partyInfo').html(`<strong>Party:</strong> ${latestTerm['party']}`);
                     $('#chamberInfo').html(`<strong>Chamber:</strong> ${latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate'}`);
                     $('#stateInfo').html(`<strong>State:</strong> ${getStateFullName(latestTerm.state)}`);
-                    const district = latestTerm.district ? `District ${latestTerm.district}` : 'At-Large';
+                    const district = latestTerm['district'] ? `District ${latestTerm['district']}` : 'At-Large';
                     $('#districtInfo').html(`<strong>District:</strong> ${latestTerm.type === 'rep' ? district : 'N/A (Senator)'}`);
                     
                     // Set profile image
