@@ -78,27 +78,78 @@
                 const response = await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
                 const legislators = await response.json();
                 
-                // Count House members by party and collect data
+                // Filter for current House members (type: 'rep' in their most recent term)
+                const houseMembers = legislators.filter(legislator => {
+                    // Get the most recent term
+                    const latestTerm = [...legislator.terms].sort((a, b) => 
+                        new Date(b.end) - new Date(a.end)
+                    )[0];
+                    
+                    // Only include if it's a House member (type: 'rep')
+                    return latestTerm.type === 'rep';
+                });
+
+                // Categorize members by party from their current term
+                const reps = [];
+                const dems = [];
+                const others = [];
+                
+                houseMembers.forEach(member => {
+                    const currentTerm = member.terms[member.terms.length - 1];
+                    const party = currentTerm.party;
+                    
+                    if (party === 'Republican') {
+                        reps.push(member);
+                    } else if (party === 'Democrat') {
+                        dems.push(member);
+                    } else {
+                        others.push(member);
+                    }
+                });
+
                 // Track unique member IDs to avoid duplicates
                 const seenIds = new Set();
                 const demMembers = [];
                 const repMembers = [];
                 
-                // Process all legislators
-                legislators.forEach(legislator => {
-                    const sortedTerms = [...legislator.terms].sort((a, b) => 
-                        new Date(b.end) - new Date(a.end)
-                    );
-                    const mostRecentTerm = sortedTerms[0];
+                reps.forEach(legislator => {
+                    const memberId = legislator.id.bioguide; // Use unique bioguide ID
                     
-                    if (mostRecentTerm.type === 'rep') {
-                        const party = mostRecentTerm.party;
-                        const memberId = legislator.id.bioguide; // Use unique bioguide ID
+                    // Only process if we haven't seen this member yet
+                    if (!seenIds.has(memberId)) {
+                        seenIds.add(memberId);
                         
-                        // Only process if we haven't seen this member yet
-                        if (!seenIds.has(memberId)) {
-                            seenIds.add(memberId);
-                            
+                        const memberInfo = {
+                            party: legislator.terms[0].party,
+                            color: legislator.terms[0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                            tooltip: `${legislator.name.first} ${legislator.name.last} (${legislator.terms[0].party[0]}-${legislator.terms[0].state}${legislator.terms[0].district ? `-${legislator.terms[0].district}` : ''})`
+                        };
+                        
+                        if (legislator.terms[0].party === 'Democrat') {
+                            demMembers.push(memberInfo);
+                        } else if (legislator.terms[0].party === 'Republican') {
+                            repMembers.push(memberInfo);
+                        }
+                    }
+                });
+
+                dems.forEach(legislator => {
+                    const memberId = legislator.id.bioguide; // Use unique bioguide ID
+                    
+                    // Only process if we haven't seen this member yet
+                    if (!seenIds.has(memberId)) {
+                        seenIds.add(memberId);
+                        
+                        const memberInfo = {
+                            party: legislator.terms[0].party,
+                            color: legislator.terms[0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                            tooltip: `${legislator.name.first} ${legislator.name.last} (${legislator.terms[0].party[0]}-${legislator.terms[0].state}${legislator.terms[0].district ? `-${legislator.terms[0].district}` : ''})`
+                        };
+                        
+                        if (legislator.terms[0].party === 'Democrat') {
+                            demMembers.push(memberInfo);
+                        } else if (legislator.terms[0].party === 'Republican') {
+                            repMembers.push(memberInfo);
                             const memberInfo = {
                                 party: party,
                                 color: party === 'Democrat' ? '#0d6efd' : '#dc3545',
@@ -118,7 +169,6 @@
                 // As of 2025, there are 3 vacancies
                 const demSeats = 213;
                 const repSeats = 219;
-                const vacancies = 3;
                 const totalSeats = demSeats + repSeats;
                 const remainingSeats = 435 - totalSeats;
                 
@@ -140,14 +190,6 @@
                         tooltip: member.tooltip
                     });
                 });
-                
-                // House data for reference
-                const houseData = {
-                    parties: [
-                        { color: "#dc3545", seats: repSeats, name: "Republicans" },
-                        { color: "#0d6efd", seats: demSeats, name: "Democrats" },
-                    ]
-                };
             
             document.getElementById('democrats-count').innerHTML = `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${demSeats})`;
             document.getElementById('republicans-count').innerHTML = `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${repSeats})`;
