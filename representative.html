@@ -26,9 +26,22 @@
 
 <main class="container my-4">
     <section id="main" class="container">
-        <h2 id="representativeName">No Representative Specified</h2>
+        <div>
+            <div class="card-body">
+                <h2 id="representativeName" class="card-title">No Representative Specified</h2>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p id="partyInfo" class="mb-1"><strong>Party:</strong> -</p>
+                        <p id="chamberInfo" class="mb-1"><strong>Chamber:</strong> -</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p id="stateInfo" class="mb-1"><strong>State:</strong> -</p>
+                        <p id="districtInfo" class="mb-1"><strong>District:</strong> -</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
-
 </main>
 <footer class="container py-3 text-muted border-top">
     <small>Argenticle @Copyright 2025 </small>
@@ -56,14 +69,22 @@
                 const rep = data.find(rep => rep.id['bioguide'] === bioguideId);
                 
                 if (rep) {
+                    // Get the latest term
+                    const latestTerm = rep.terms[rep.terms.length - 1];
+                    
                     // Format the full name
                     const name = rep.name;
                     const fullName =
                         `${name.first} ${name['middle'] ? name['middle'] + ' ' : ''}${name.last}${name.suffix
                         ? ' ' + name.suffix : ''}`;
                     
-                    // Update the welcome message
+                    // Update the representative's information
                     $('#representativeName').text(fullName);
+                    $('#partyInfo').html(`<strong>Party:</strong> ${latestTerm.party}`);
+                    $('#chamberInfo').html(`<strong>Chamber:</strong> ${latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate'}`);
+                    $('#stateInfo').html(`<strong>State:</strong> ${getStateFullName(latestTerm.state)}`);
+                    const district = latestTerm.district ? `District ${latestTerm.district}` : 'At-Large';
+                    $('#districtInfo').html(`<strong>District:</strong> ${latestTerm.type === 'rep' ? district : 'N/A (Senator)'}`);
                 } else {
                     console.error('Representative not found with bioguide ID:', bioguideId);
                     $('#representativeName').text('Representative Not Found');
