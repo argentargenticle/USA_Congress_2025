@@ -102,7 +102,7 @@
 <div class="container my-2 my-md-3">
     <div class="row g-2 g-md-1 justify-content-center">
         <div class="col-12 col-sm-6 col-md-auto">
-            <a href="#" class="btn btn-light w-100 text-start border-0 rounded-pill px-3 text-dark shadow-sm">
+            <a id="ballotpediaLink" href="#" class="btn btn-light w-100 text-start border-0 rounded-pill px-3 text-dark shadow-sm">
                 <i class="fas fa-landmark me-1"></i>
                 <span>Ballotpedia</span>
             </a>
@@ -294,6 +294,10 @@
                     
                     // Update all icons with the party color
                     $('.fa-solid, .fas').addClass(textColorClass);
+                    
+                    // Update Ballotpedia link with representative's ballotpedia ID
+                    const ballotpediaId = rep.id.ballotpedia || fullName.replace(/\s+/g, '_');
+                    $('#ballotpediaLink').attr('href', `https://ballotpedia.org/${ballotpediaId}`);
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
