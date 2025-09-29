@@ -241,8 +241,8 @@
                 const chart = d3.parliamentChart(chartData, chartWidth)  // Pass data and dynamic width
                     ['sections'](2)      // Set number of sections
                     ['sectionGap'](40)   // Set gap between sections
-                    ['seatRadius'](9)    // Set seat radius
-                    ['rowHeight'](19);   // Set row height
+                    ['seatRadius'](chartWidth * 0.011) // Dynamic seat radius based on chart width (~9px at 800px width)
+                    ['rowHeight'](chartWidth * 0.024); // Dynamic row height based on chart width (~19px at 800px width)
                 
                 // Apply the chart to the group
                 g.call(chart);
