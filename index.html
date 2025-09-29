@@ -46,7 +46,7 @@
 </nav>
 
 <main class="container my-4">
-    <section class="container">
+    <section id="main" class="container">
         <h2>Welcome</h2>
         <p>This is a minimal, responsive HTML template with a header, main, and footer.</p>
         <p>Edit this content to get started.</p>
@@ -155,6 +155,9 @@
         $results.prepend(alertHtml);
         return;
       }
+
+      // Hide the main welcome section so results replace it
+      $('#main').addClass('d-none');
 
       // Build a row of cards (one per match) and add it to the page
       let rowHtml = '<div class="row g-3">';
