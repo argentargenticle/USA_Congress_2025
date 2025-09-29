@@ -72,6 +72,10 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
     <script>
+        // Register the parliament chart with d3
+        d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
+    </script>
+    <script>
         $(document).ready(async function() {
             try {
                 // Fetch current legislators data
@@ -225,6 +229,7 @@
                     });
                 });
             
+            // Update the UI with party counts
             document.getElementById('democrats-count').innerHTML = `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${democrats})`;
             document.getElementById('republicans-count').innerHTML = `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${republicans})`;
             
@@ -242,18 +247,26 @@
             }
 
                 // Create and render the parliament chart
-                const chart = d3.select("#parliament-chart");
-                const svg = chart.append("svg")
+                const chartContainer = d3.select("#parliament-chart");
+                const svg = chartContainer.append("svg")
                     .attr("width", 800)
                     .attr("height", 400);
                 
-                const g = svg.append("g")
-                    .call(d3.parliamentChart(chartData, 800)
-                        .seatRadius(9)
-                        .sections(2)
-                        .sectionGap(40)
-                        .rowHeight(20)
-                    );
+                // Prepare data for the chart using the existing chartData
+                // which already contains individual member data with colors and tooltips
+                const g = svg.append("g");
+                
+                // Create and configure the parliament chart with the data
+                const chart = d3.parliamentChart(chartData, 800);  // Pass data and width
+                
+                // Set chart options
+                chart.sections(2);
+                chart.sectionGap(40);
+                chart.seatRadius(9);
+                chart.rowHeight(20);
+                
+                // Apply the chart to the group
+                g.call(chart);
                 
                 // Add tooltips
                 const tooltip = d3.select("body").append("div")
