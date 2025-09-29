@@ -94,7 +94,19 @@
             
             document.getElementById('democrats-count').innerHTML = `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${demSeats})`;
             document.getElementById('republicans-count').innerHTML = `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${repSeats})`;
-            document.getElementById('total-seats').textContent = `Total: ${totalSeats} seats (${remainingSeats} ${remainingSeats === 1 ? 'vacancy' : 'vacancies'})`;
+            
+            const totalSeatsElement = document.getElementById('total-seats');
+            totalSeatsElement.textContent = `Total: ${totalSeats} seats (${remainingSeats} ${remainingSeats === 1 ? 'vacancy' : 'vacancies'})`;
+            
+            if (remainingSeats > 0) {
+                const link = document.createElement('a');
+                link.href = 'https://ballotpedia.org/Special_elections_to_the_119th_United_States_Congress_(2025-2026)';
+                link.textContent = 'View Special Elections';
+                link.target = '_blank';
+                link.className = 'ms-2';
+                totalSeatsElement.appendChild(document.createElement('br'));
+                totalSeatsElement.appendChild(link);
+            }
 
             // Create and render the parliament chart
             const chart = d3.select("#parliament-chart");
