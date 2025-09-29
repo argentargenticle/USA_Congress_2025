@@ -108,38 +108,42 @@
                     }
                 });
 
-                // U.S. House of Representatives data
-                const houseData = {
-                    parties: [
-                        { color: "#dc3545", seats: partyCounts['Republican'], name: "Republicans" },
-                        { color: "#0d6efd", seats: partyCounts['Democrat'], name: "Democrats" }
-                    ]
-                };
-
+                // U.S. House of Representatives data - 118th Congress (2023-2025)
+                // As of 2025, there are 3 vacancies
+                const demSeats = 213;
+                const repSeats = 219;
+                const vacancies = 3;
+                const totalSeats = demSeats + repSeats;
+                const remainingSeats = 435 - totalSeats;
+                
                 // Prepare data for the chart
                 const chartData = [];
                 
-                // Add Republicans first (left side)
-                repMembers.forEach(member => {
+                // Add Republicans (left side)
+                for (let i = 0; i < repSeats; i++) {
                     chartData.push({
-                        color: member.color,
-                        tooltip: member.tooltip
+                        color: '#dc3545',
+                        tooltip: 'Republican Representative'
                     });
-                });
+                }
                 
-                // Then add Democrats (right side)
-                demMembers.forEach(member => {
+                // Add Democrats (right side)
+                for (let i = 0; i < demSeats; i++) {
                     chartData.push({
-                        color: member.color,
-                        tooltip: member.tooltip
+                        color: '#0d6efd',
+                        tooltip: 'Democratic Representative'
                     });
-                });
-
-                // Update party counts in the legend while preserving HTML
-                const demSeats = houseData.parties[0].seats;
-                const repSeats = houseData.parties[1].seats;
-                const totalSeats = demSeats + repSeats;
-                const remainingSeats = 435 - totalSeats;
+                }
+                
+                // No vacancies shown in the chart, only in the count
+                
+                // House data for reference
+                const houseData = {
+                    parties: [
+                        { color: "#dc3545", seats: repSeats, name: "Republicans" },
+                        { color: "#0d6efd", seats: demSeats, name: "Democrats" },
+                    ]
+                };
             
             document.getElementById('democrats-count').innerHTML = `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${demSeats})`;
             document.getElementById('republicans-count').innerHTML = `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${repSeats})`;
