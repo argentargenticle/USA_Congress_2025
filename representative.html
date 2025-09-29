@@ -304,6 +304,11 @@
                     const votesmartName = fullName.toLowerCase().replace(/\s+/g, '-');
                     $('a:contains("Vote Smart")').attr('href', `https://justfacts.votesmart.org/candidate/biography/${votesmartId}/${votesmartName}`);
                     
+                    // Set OpenSecrets link with Ballotpedia ID in URL and opensecrets ID as cid
+                    const currentYear = new Date().getFullYear();
+                    const opensecretsId = rep.id.opensecrets || '';
+                    $('a:contains("OpenSecrets")').attr('href', `https://www.opensecrets.org/members-of-congress/${ballotpediaId}/summary?cid=${opensecretsId}&cycle=${currentYear}`);
+                    
                     // Update the representative's information
                     $('#representativeName').text(fullName);
                     $('#chamberInfo').text(latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate');
