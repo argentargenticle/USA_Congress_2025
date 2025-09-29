@@ -60,14 +60,32 @@
     <small>Argenticle @Copyright 2025 </small>
 </footer>
 <script>
-<!--    TODO: Add url grabber which reads url like this index.html?searchTerm=what_user_typer_in-->
+<!--    TODO: fix url grabber which reads url like this index.html?searchTerm=what_user_typer_in-->
   // jQuery: handle search submit from button click or Enter key
+  // Function to handle search from URL or form
+  function handleSearchFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTerm = urlParams.get('searchTerm');
+    if (searchTerm) {
+      $('#navbarSearchInput').val(searchTerm);
+      // Small delay to ensure DOM is ready
+      setTimeout(() => handleSearch(searchTerm), 50);
+    }
+  }
+
   $(function () {
+    // Handle form submission
     $('#navbarSearchForm').on('submit', function (e) {
       e.preventDefault();
       const query = $('#navbarSearchInput').val().trim();
+      // Update URL with search term
+      const newUrl = query ? `?searchTerm=${encodeURIComponent(query)}` : window.location.pathname;
+      window.history.pushState({}, '', newUrl);
       handleSearch(query);
     });
+    
+    // Check for search term in URL on page load
+    handleSearchFromUrl();
 
     // Placeholder you can customize. Replace with your real logic.
     window.handleSearch = function (query) {
