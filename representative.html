@@ -26,7 +26,7 @@
 
 <main class="container my-4">
     <section id="main" class="container">
-        <h2>Welcome</h2>
+        <h2 id="representativeName">No Representative Specified</h2>
     </section>
 
 </main>
@@ -55,18 +55,16 @@
                     const fullName = `${name.first} ${name.middle ? name.middle + ' ' : ''}${name.last}${name.suffix ? ' ' + name.suffix : ''}`;
                     
                     // Update the welcome message
-                    $('h2').text(fullName);
+                    $('#representativeName').text(fullName);
                 } else {
                     console.error('Representative not found with bioguide ID:', bioguideId);
-                    $('h2').text('Representative Not Found');
+                    $('#representativeName').text('Representative Not Found');
                 }
             })
             .fail(function(error) {
                 console.error('Error loading data:', error);
-                $('h2').text('Error Loading Data');
+                $('#representativeName').text('Error Loading Data');
             });
-    } else {
-        $('h2').text('No Representative Specified');
     }
 </script>
 </body>
