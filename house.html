@@ -52,8 +52,10 @@
             <h2>U.S. House of Representatives</h2>
             <p class="lead">Current Party Composition</p>
         </div>
-        <div class="col-12 col-lg-10">
-            <div id="parliament-chart" class="text-center"></div>
+        <div class="col-12">
+            <div class="chart-wrapper" style="width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden;">
+                <div id="parliament-chart" class="text-center"></div>
+            </div>
         </div>
         <div class="col-12 mt-4">
             <div class="d-flex flex-column align-items-center gap-2">
@@ -220,22 +222,26 @@
 
                 // Create and render the parliament chart
                 const chartContainer = d3.select("#parliament-chart");
+                const containerWidth = chartContainer.node().getBoundingClientRect().width;
+                const chartWidth = Math.min(800, containerWidth);
+                const chartHeight = chartWidth * 0.5; // Maintain aspect ratio
+                
                 const svg = chartContainer.append("svg")
-                    .attr("width", 800)
-                    .attr("height", 400);
+                    .attr("width", "100%")
+                    .attr("height", "auto")
+                    .attr("viewBox", `0 0 ${chartWidth} ${chartHeight}`)
+                    .style("max-width", "800px");
                 
                 // Prepare data for the chart using the existing chartData
                 // which already contains individual member data with colors and tooltips
                 const g = svg.append("g");
                 
                 // Create and configure the parliament chart with the data
-                const chart = d3.parliamentChart(chartData, 800);  // Pass data and width
-                
-                // Set chart options using bracket notation to avoid IDE warnings
-                chart['sections'](2);      // Set number of sections
-                chart['sectionGap'](40);   // Set gap between sections
-                chart['seatRadius'](9);    // Set seat radius
-                chart['rowHeight'](19);    // Set row height
+                const chart = d3.parliamentChart(chartData, chartWidth)  // Pass data and dynamic width
+                    .sections(2)      // Set number of sections
+                    .sectionGap(40)   // Set gap between sections
+                    .seatRadius(9)    // Set seat radius
+                    .rowHeight(19);   // Set row height
                 
                 // Apply the chart to the group
                 g.call(chart);
