@@ -40,8 +40,14 @@
         return urlParams.get(name);
     }
 
-    // Get bioguide ID from URL
+    // Get URL parameters
     const bioguideId = getUrlParameter('bioguide');
+    const source = getUrlParameter('source');
+    
+    // Update back button link if source is 'home'
+    if (source === 'home') {
+        $('.nav-link[href="#"]').attr('href', 'index.html');
+    }
     
     if (bioguideId) {
         $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
