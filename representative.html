@@ -313,6 +313,10 @@
                     const govtrackId = rep.id.govtrack || '';
                     $('a:contains("GovTrack")').attr('href', `https://www.govtrack.us/congress/members/${govtrackId}`);
                     
+                    // Set Unusual Whales link with official full name
+                    const officialFullName = encodeURIComponent(`${name.first} ${name.middle ? name.middle + ' ' : ''}${name.last}`);
+                    $('a:contains("Unusual Whales")').attr('href', `https://unusualwhales.com/politics/profile/${officialFullName}`);
+                    
                     // Update the representative's information
                     $('#representativeName').text(fullName);
                     $('#chamberInfo').text(latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate');
