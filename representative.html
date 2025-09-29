@@ -214,18 +214,25 @@
                         });
                     }
                     
-                    // Update party badge and body class
+                    // Update party badge, body class, and icon colors
                     const party = latestTerm['party'] || '';
                     let badgeClass = 'bg-secondary';
+                    let textColorClass = 'text-secondary';
+                    
                     if (party.includes('Democrat')) {
                         badgeClass = 'bg-primary';
+                        textColorClass = 'text-primary';
                         $('body').addClass('bg-primary-subtle');
                     } else if (party.includes('Republican')) {
                         badgeClass = 'bg-danger';
+                        textColorClass = 'text-danger';
                         $('body').addClass('bg-danger-subtle');
                     } else {
                         $('body').addClass('bg-light');
                     }
+                    
+                    // Update all icons with the party color
+                    $('.fa-solid, .fas').addClass(textColorClass);
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
