@@ -206,7 +206,7 @@
                 <p class="card-text mb-2">' + $('<div>').text(
                     (state ? getStateFullName(state) : '') + (district !== null ? ' - District ' + district : '')
                 ).html() + '</p>\
-                <button type="button" class="btn ' + btnClass + '">More Info</button>\
+                <button type="button" class="btn ' + btnClass + '" onclick="window.location.href=\'representative.html?bioguide=' + bioguide + '&source=home\'">More Info</button>\
               </div>\
             </div>\
           </div>';
