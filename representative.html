@@ -144,27 +144,42 @@
         return getTimeInCongress(chamberTerms, currentTerm);
     }
 
-    // Function to calculate time until term ends
+    // Function to calculate time until term ends in years, months, and days
     function getTermCountdown(endDate) {
         const end = new Date(endDate);
         const today = new Date();
         
-        if (end < today) return 'Term has ended';
-        
-        const diffTime = end - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays > 365) {
-            const years = Math.floor(diffDays / 365);
-            const months = Math.floor((diffDays % 365) / 30);
-            return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}`;
-        } else if (diffDays > 30) {
-            const months = Math.floor(diffDays / 30);
-            const days = diffDays % 30;
-            return `${months} month${months !== 1 ? 's' : ''} ${days} day${days !== 1 ? 's' : ''}`;
-        } else {
-            return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+        if (end < today) {
+            const formattedEndDate = end.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            return `Term ended on ${formattedEndDate}`;
         }
+        
+        let years = end.getFullYear() - today.getFullYear();
+        let months = end.getMonth() - today.getMonth();
+        let days = end.getDate() - today.getDate();
+        
+        if (days < 0) {
+            months--;
+            // Get the last day of the previous month
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            days += lastDayOfMonth;
+        }
+        
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+        
+        const parts = [];
+        if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+        if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+        if (days > 0 || parts.length === 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+        
+        return parts.join(', ');
     }
 
     // Get URL parameters
