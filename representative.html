@@ -323,6 +323,10 @@
                     const stateForUrl = stateFullName.toLowerCase().replace(/\s+/g, '-');
                     $('#AIPAC').attr('href', `https://www.trackaipac.com/states/${stateForUrl}?rq=${encodeURIComponent(officialFullName)}`);
                     
+                    // Set Congress.gov link
+                    const ballotpediaForUrl = (rep.id.ballotpedia || '').toLowerCase().replace(/\s+/g, '-');
+                    $('a:contains("Congress.gov")').attr('href', `https://www.congress.gov/member/${ballotpediaForUrl}/${bioguideId}?`);
+                    
                     // Update the representative's information
                     $('#representativeName').text(fullName);
                     $('#chamberInfo').text(latestTerm.type === 'rep' ? 'House of Representatives' : 'Senate');
