@@ -227,10 +227,11 @@
                 const chartHeight = chartWidth * 0.5; // Maintain aspect ratio
                 
                 const svg = chartContainer.append("svg")
-                    .attr("width", "100%")
-                    .attr("height", "auto")
+                    .attr("width", chartWidth)
+                    .attr("height", chartHeight)
                     .attr("viewBox", `0 0 ${chartWidth} ${chartHeight}`)
-                    .style("max-width", "800px");
+                    .style("max-width", "100%")
+                    .style("height", "auto");
                 
                 // Prepare data for the chart using the existing chartData
                 // which already contains individual member data with colors and tooltips
