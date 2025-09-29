@@ -296,11 +296,11 @@
                     $('.fa-solid, .fas').addClass(textColorClass);
                     
                     // Update Ballotpedia link with representative's ballotpedia ID
-                    const ballotpediaId = rep.id.ballotpedia || fullName.replace(/\s+/g, '_');
+                    const ballotpediaId = rep.id['ballotpedia'] || fullName.replace(/\s+/g, '_');
                     $('#ballotpediaLink').attr('href', `https://ballotpedia.org/${ballotpediaId}`);
                     
                     // Set Vote Smart link with ID and name from JSON
-                    const votesmartId = rep.id.votesmart; // Fallback to default if not found
+                    const votesmartId = rep.id['votesmart']; // Fallback to default if not found
                     const votesmartName = fullName.toLowerCase().replace(/\s+/g, '-');
                     $('a:contains("Vote Smart")').attr('href', `https://justfacts.votesmart.org/candidate/biography/${votesmartId}/${votesmartName}`);
                     
