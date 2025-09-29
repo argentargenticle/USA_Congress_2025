@@ -11,7 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="js/congress.js"></script>
 </head>
-<body class="bg-primary-subtle">
+<body>
 <nav class="navbar bg-dark navbar-expand-lg py-2" data-bs-theme="dark">
     <div class="container">
         <a href="#" class="btn btn-light btn-lg d-flex align-items-center" id="backButton">
@@ -213,11 +213,18 @@
                         });
                     }
                     
-                    // Update party badge
+                    // Update party badge and body class
                     const party = latestTerm['party'] || '';
                     let badgeClass = 'bg-secondary';
-                    if (party.includes('Democrat')) badgeClass = 'bg-primary';
-                    if (party.includes('Republican')) badgeClass = 'bg-danger';
+                    if (party.includes('Democrat')) {
+                        badgeClass = 'bg-primary';
+                        $('body').addClass('bg-primary-subtle');
+                    } else if (party.includes('Republican')) {
+                        badgeClass = 'bg-danger';
+                        $('body').addClass('bg-danger-subtle');
+                    } else {
+                        $('body').addClass('bg-light');
+                    }
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
