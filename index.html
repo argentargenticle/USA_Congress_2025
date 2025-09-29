@@ -59,6 +59,21 @@
     <small>Argenticle @Copyright 2025 </small>
 </footer>
 <script>
+    function getStateFullName(abbr) {
+        const states = {
+            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+            'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+            'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+            'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+            'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+            'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+            'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+            'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
+        };
+        return states[abbr] || abbr;
+    }
   // jQuery: handle search submit from button click or Enter key
   $(function () {
     $('#navbarSearchForm').on('submit', function (e) {
@@ -203,7 +218,7 @@
                 <span class="card-text mb-2 badge ' + partyClass + '">' + $('<div>').text(party).html() + '</span>\
                 <p class="text-muted mb-2"><i class="fas ' + (chamber === 'Senate' ? 'fa-scale-balanced' : 'fa-landmark') + ' me-2"></i>' + $('<div>').text(chamber).html() + '</p>\
                 <p class="card-text mb-2">' + $('<div>').text(
-                  (state ? state : '') + (district !== null ? '-' + district : '')
+                    (state ? getStateFullName(state) : '') + (district !== null ? ' - District ' + district : '')
                 ).html() + '</p>\
                 <button type="button" class="btn ' + btnClass + '">More Info</button>\
               </div>\
