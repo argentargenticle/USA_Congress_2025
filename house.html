@@ -95,6 +95,11 @@
                 const seenBioguides = new Set();
                 // List of non-voting states/territories
                 const nonVotingStates = ['AS', 'DC', 'GU', 'MP', 'PR', 'VI'];
+                
+                // Initialize counters
+                let republicans = 0;
+                let democrats = 0;
+                let otherParties = 0;
 
                 houseMembers.forEach(member => {
                     // Skip if no bioguide ID exists or if we've seen this bioguide before
@@ -117,6 +122,15 @@
                     
                     // Only show members whose term hasn't ended yet
                     if (termEnd > today) {
+                        // Count by party
+                        if (term.party === 'Republican') {
+                            republicans++;
+                        } else if (term.party === 'Democrat') {
+                            democrats++;
+                        } else {
+                            otherParties++;
+                        }
+                        
                         console.log(
                             `${member.name.official_full}: ` +
                             `Bioguide: ${member.id.bioguide}, ` +
@@ -125,7 +139,16 @@
                         );
                     }
                 });
-                console.log('============================');
+                
+                // Log the final counts
+                console.log('\n=== PARTY COUNTS (VOTING MEMBERS ONLY) ===');
+                console.log(`Republicans: ${republicans}`);
+                console.log(`Democrats: ${democrats}`);
+                if (otherParties > 0) {
+                    console.log(`Other Parties: ${otherParties}`);
+                }
+                console.log(`Total Voting Members: ${republicans + democrats + otherParties}`);
+                console.log('======================================');
 
                 // Categorize members by party from their current term
                 const reps = [];
