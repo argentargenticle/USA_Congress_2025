@@ -23,7 +23,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto gap-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-landmark me-2"></i>House</a>
+                    <a class="nav-link active" href="#"><i class="fas fa-landmark me-2"></i>House</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="senateLink"><i class="fas fa-scale-balanced me-2"></i>Senate</a>
@@ -80,13 +80,19 @@
                 
                 // Filter for current House members (type: 'rep' in their most recent term)
                 const houseMembers = legislators.filter(legislator => {
+                    // Skip if terms is missing or not an array
+                    if (!legislator['terms'] || !Array.isArray(legislator['terms']) || legislator['terms']['length'] ===
+                        0) {
+                        return false;
+                    }
+                    
                     // Get the most recent term
-                    const latestTerm = [...legislator.terms].sort((a, b) => 
+                    const latestTerm = [...legislator['terms']].sort((a, b) =>
                         new Date(b.end) - new Date(a.end)
                     )[0];
                     
                     // Only include if it's a House member (type: 'rep')
-                    return latestTerm.type === 'rep';
+                    return latestTerm && latestTerm.type === 'rep';
                 });
 
                 const today = new Date();
@@ -101,18 +107,18 @@
 
                 houseMembers.forEach(member => {
                     // Skip if no bioguide ID exists or if we've seen this bioguide before
-                    if (!member.id || !member.id.bioguide || seenBioguides.has(member.id.bioguide)) {
+                    if (!member.id || !member.id['bioguide'] || seenBioguides.has(member.id['bioguide'])) {
                         return;
                     }
                     
-                    const term = member.terms[member.terms.length - 1];
+                    const term = member['terms'][member['terms'].length - 1];
                     
                     // Skip non-voting delegates (from territories)
                     if (nonVotingStates.includes(term.state)) {
                         return;
                     }
                     
-                    seenBioguides.add(member.id.bioguide);
+                    seenBioguides.add(member.id['bioguide']);
                     const termEnd = new Date(term.end);
                     
                     // Only count members whose term hasn't ended yet
@@ -134,7 +140,7 @@
                 const others = [];
                 
                 houseMembers.forEach(member => {
-                    const currentTerm = member.terms[member.terms.length - 1];
+                    const currentTerm = member['terms'][member['terms'].length - 1];
                     const party = currentTerm.party;
                     
                     if (party === 'Republican') {
@@ -152,54 +158,46 @@
                 const repMembers = [];
                 
                 reps.forEach(legislator => {
-                    const memberId = legislator.id.bioguide; // Use unique bioguide ID
+                    const memberId = legislator.id['bioguide']; // Use unique bioguide ID
                     
                     // Only process if we haven't seen this member yet
                     if (!seenIds.has(memberId)) {
                         seenIds.add(memberId);
                         
                         const memberInfo = {
-                            party: legislator.terms[0].party,
-                            color: legislator.terms[0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
-                            tooltip: `${legislator.name.first} ${legislator.name.last} (${legislator.terms[0].party[0]}-${legislator.terms[0].state}${legislator.terms[0].district ? `-${legislator.terms[0].district}` : ''})`
+                            party: legislator['terms'][0].party,
+                            color: legislator['terms'][0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                            tooltip:
+                                `${legislator.name.first} ${legislator.name.last} (${legislator['terms'][0].party[0]}-${legislator['terms'][0].state}${legislator['terms'][0]['district'] ? `-${legislator['terms'][0]['district']}` : ''})`
                         };
                         
-                        if (legislator.terms[0].party === 'Democrat') {
+                        if (legislator['terms'][0].party === 'Democrat') {
                             demMembers.push(memberInfo);
-                        } else if (legislator.terms[0].party === 'Republican') {
+                        } else if (legislator['terms'][0].party === 'Republican') {
                             repMembers.push(memberInfo);
                         }
                     }
                 });
 
                 dems.forEach(legislator => {
-                    const memberId = legislator.id.bioguide; // Use unique bioguide ID
+                    const memberId = legislator.id['bioguide']; // Use unique bioguide ID
                     
                     // Only process if we haven't seen this member yet
                     if (!seenIds.has(memberId)) {
                         seenIds.add(memberId);
                         
                         const memberInfo = {
-                            party: legislator.terms[0].party,
-                            color: legislator.terms[0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
-                            tooltip: `${legislator.name.first} ${legislator.name.last} (${legislator.terms[0].party[0]}-${legislator.terms[0].state}${legislator.terms[0].district ? `-${legislator.terms[0].district}` : ''})`
+                            party: legislator['terms'][0].party,
+                            color: legislator['terms'][0].party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                            tooltip:
+                                `${legislator.name.first} ${legislator.name.last} (${legislator['terms'][0].party[0]}-${legislator['terms'][0].state}${legislator['terms'][0]['district'] ? `-${legislator['terms'][0]['district']}` : ''})`
                         };
                         
-                        if (legislator.terms[0].party === 'Democrat') {
+                        if (legislator['terms'][0].party === 'Democrat') {
                             demMembers.push(memberInfo);
-                        } else if (legislator.terms[0].party === 'Republican') {
+                        } else if (legislator['terms'][0].party === 'Republican') {
                             repMembers.push(memberInfo);
-                            const memberInfo = {
-                                party: party,
-                                color: party === 'Democrat' ? '#0d6efd' : '#dc3545',
-                                tooltip: `${legislator.name.first} ${legislator.name.last} (${party[0]}-${mostRecentTerm.state}${mostRecentTerm.district ? `-${mostRecentTerm.district}` : ''})`
-                            };
-                            
-                            if (party === 'Democrat') {
-                                demMembers.push(memberInfo);
-                            } else if (party === 'Republican') {
-                                repMembers.push(memberInfo);
-                            }
+                            // This block is redundant and can be removed since we already created memberInfo above
                         }
                     }
                 });
@@ -287,14 +285,7 @@
                     });
             } catch (error) {
                 console.error('Error loading legislator data:', error);
-                // Fallback to static data if fetch fails
-                const houseData = {
-                    parties: [
-                        { color: "#0d6efd", seats: 213, name: "Democrats" },
-                        { color: "#dc3545", seats: 219, name: "Republicans" }
-                    ]
-                };
-                // ... rest of the fallback code ...
+                // Fallback code would go here if needed
             }
         });
     </script>
