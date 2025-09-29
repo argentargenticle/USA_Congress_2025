@@ -1,3 +1,4 @@
+// State abbreviation to full name mapping
 function getStateFullName(abbr) {
     const states = {
         'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
