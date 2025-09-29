@@ -79,7 +79,8 @@
                 const legislators = await response.json();
                 
                 // Count House members by party and collect data
-                const partyCounts = { 'Democrat': 0, 'Republican': 0 };
+                // Track unique member IDs to avoid duplicates
+                const seenIds = new Set();
                 const demMembers = [];
                 const repMembers = [];
                 
@@ -92,18 +93,23 @@
                     
                     if (mostRecentTerm.type === 'rep') {
                         const party = mostRecentTerm.party;
-                        partyCounts[party] = (partyCounts[party] || 0) + 1;
+                        const memberId = legislator.id.bioguide; // Use unique bioguide ID
                         
-                        const memberInfo = {
-                            party: party,
-                            color: party === 'Democrat' ? '#0d6efd' : '#dc3545',
-                            tooltip: `${legislator.name.first} ${legislator.name.last} (${party[0]}-${mostRecentTerm.state}${mostRecentTerm.district ? `-${mostRecentTerm.district}` : ''})`
-                        };
-                        
-                        if (party === 'Democrat') {
-                            demMembers.push(memberInfo);
-                        } else if (party === 'Republican') {
-                            repMembers.push(memberInfo);
+                        // Only process if we haven't seen this member yet
+                        if (!seenIds.has(memberId)) {
+                            seenIds.add(memberId);
+                            
+                            const memberInfo = {
+                                party: party,
+                                color: party === 'Democrat' ? '#0d6efd' : '#dc3545',
+                                tooltip: `${legislator.name.first} ${legislator.name.last} (${party[0]}-${mostRecentTerm.state}${mostRecentTerm.district ? `-${mostRecentTerm.district}` : ''})`
+                            };
+                            
+                            if (party === 'Democrat') {
+                                demMembers.push(memberInfo);
+                            } else if (party === 'Republican') {
+                                repMembers.push(memberInfo);
+                            }
                         }
                     }
                 });
