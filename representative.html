@@ -132,7 +132,8 @@
             </a>
         </div>
         <div class="col-12 col-sm-6 col-md-auto">
-            <a href="#" class="btn btn-light w-100 text-start border-0 rounded-pill px-3 text-dark shadow-sm">
+            <a id="AIPAC" href="#" class="btn btn-light w-100 text-start border-0 rounded-pill px-3 text-dark
+            shadow-sm">
                 <i class="fas fa-hand-holding-usd me-1"></i>
                 <span>Track AIPAC</span>
             </a>
@@ -316,6 +317,11 @@
                     // Set Unusual Whales link with official full name
                     const officialFullName = encodeURIComponent(`${name.first} ${name.middle ? name.middle + ' ' : ''}${name.last}`);
                     $('a:contains("Unusual Whales")').attr('href', `https://unusualwhales.com/politics/profile/${officialFullName}`);
+                    
+                    // Set AIPAC link with official full name and state
+                    const stateFullName = getStateFullName(latestTerm.state);
+                    const stateForUrl = stateFullName.toLowerCase().replace(/\s+/g, '-');
+                    $('#AIPAC').attr('href', `https://www.trackaipac.com/states/${stateForUrl}?rq=${encodeURIComponent(officialFullName)}`);
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
