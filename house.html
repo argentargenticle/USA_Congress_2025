@@ -111,11 +111,10 @@
             // Only hide if the card is visible, the click is outside the card, and not on a seat
             if (cardContainer && cardContainer.style.display === 'flex' && !isClickInsideCard && !isClickOnSeat) {
                 // Reset the selected seat if any
-                const selectedSeat = document.querySelector('circle[style*="fill: white"]');
-                if (selectedSeat) {
-                    const color = selectedSeat.getAttribute('data-party') === 'D' ? '#0d6efd' : '#dc3545';
-                    selectedSeat.style.fill = color;
-                    selectedSeat.style.stroke = 'none';
+                if (window.currentSelectedSeat) {
+                    const seat = d3.select(window.currentSelectedSeat);
+                    seat.style('fill', window.currentSeatColor || '#0d6efd')
+                        .style('stroke', 'none');
                 }
                 
                 // Hide the card
@@ -483,15 +482,19 @@
                                 }
                             }
                             
-                            // Select new seat
+                                        // Select new seat
                             selectedSeat = currentSeat;
                             selectedSeatIndex = index;
-                            window.highlightedCount = 1; // Set to 1 when selecting a new seat
+                            window.highlightedCount = 1;
                             updateHighlightedCount();
                             updateSeatAppearance(currentSeat, true, memberData.color);
                             updateRepresentativeCard(memberData);
                             const card = document.getElementById('representativeCardContainer');
                             card.style.display = 'flex';
+                            
+                            // Store the seat and its color in window for easy access
+                            window.currentSelectedSeat = currentSeat.node();
+                            window.currentSeatColor = memberData.color;
                             card.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         })
                         .append('title')
