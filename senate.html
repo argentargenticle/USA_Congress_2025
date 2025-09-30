@@ -513,9 +513,13 @@
                     img.src = 'https://via.placeholder.com/150x200?text=No+Image';
                 }
                 
-                // Set up More Info button click handler
+                // Set up More Info button with party-specific styling
                 const moreInfoBtn = document.getElementById('moreInfoBtn');
                 if (moreInfoBtn) {
+                    // Set button class based on party
+                    moreInfoBtn.className = 'btn ' + 
+                        (member.party === 'Republican' ? 'btn-danger' : 'btn-primary');
+                    
                     moreInfoBtn.onclick = function() {
                         if (member.id) {
                             window.location.href = `representative.html?bioguide=${member.id}&source=senate`;
