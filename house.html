@@ -102,7 +102,22 @@
         // Register the parliament chart with d3
         d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
 
-        // TODO: 5) When person click outside of the card, the card closes.
+        // Handle clicks outside the card to close it
+        function handleDocumentClick(event) {
+            const cardContainer = document.getElementById('representativeCardContainer');
+            const isClickInsideCard = event.target.closest('#representativeCardContainer');
+            const isClickOnSeat = event.target.closest('circle, .seat');
+            
+            // Only hide if the card is visible, the click is outside the card, and not on a seat
+            if (cardContainer && cardContainer.style.display === 'flex' && !isClickInsideCard && !isClickOnSeat) {
+                cardContainer.style.display = 'none';
+            }
+        }
+        
+        // Add the event listener with a small delay to ensure it doesn't interfere with initial page load
+        setTimeout(() => {
+            document.addEventListener('click', handleDocumentClick);
+        }, 100);
 
         // Handle search form submission
         $(function() {
