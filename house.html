@@ -51,23 +51,25 @@
         <div class="col-12 text-center">
             <h2>U.S. House of Representatives</h2>
             <span class="lead">Current Party Composition</span>
-<!--            TODO: 1) Put the card (reference below from lines 55 to 68)
-           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card p-0 d-flex flex-row align-items-start h-100">
-              <img src="' + imgSrc + '" alt="Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
-              <div class="p-2">
-                <h5 class="card-title">' + $('<div>').text(fullName).html() + '</h5>
-                <span class="card-text mb-2 badge ' + partyClass + '">' + $('<div>').text(party).html() + '</span>
-                <p class="text-muted mb-2"><i class="fas ' + (chamber === 'Senate' ? 'fa-scale-balanced' : 'fa-landmark') + ' me-2"></i>' + $('<div>').text(chamber).html() + '</p>
-                <p class="card-text mb-2">' + $('<div>').text(
-                    (state ? getStateFullName(state) : '') + (district !== null ? ' - District ' + district : '')
-                ).html() + '</p>
-                <button type="button" class="btn ' + btnClass + '" onclick="window.location.href='representative.html?bioguide=' + bioguide + '&source=home'">More Info</button>
-              </div>
+
+            <!-- Representative Card -->
+            <div class="row justify-content-center mt-4" id="representativeCardContainer">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="card p-0 d-flex flex-row align-items-start h-100">
+                        <img id="repImage" src="" alt="Representative Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
+                        <div class="p-3">
+                            <h4 class="card-title mb-3" id="repName"></h4>
+                            <span class="card-text mb-3 d-inline-block" id="repParty"></span>
+                            <p class="text-muted mb-2"><i class="fas fa-landmark me-2"></i><span id="repChamber">House</span></p>
+                            <p class="card-text mb-3" id="repDistrict"></p>
+                            <button type="button" class="btn btn-primary" id="moreInfoBtn">More Info</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
--->
-        <!--     TODO: 2) When you click a seat/dot should open the card with that representative's info dot/seat you clicked on -->
+            
+            <!-- Placeholder for future functionality -->
+            <!-- TODO: 2) When you click a seat/dot should open the card with that representative's info dot/seat you clicked on -->
         </div>
         <div class="col-12">
             <div class="chart-wrapper" style="width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden;">
@@ -172,6 +174,9 @@
                 const otherMembers = [];
                 const seenIds = new Set();
                 
+                // Store all member data for lookup
+                const allMembersData = [];
+                
                 houseMembers.forEach(member => {
                     // Skip if no bioguide ID exists or if we've seen this bioguide before
                     if (!member.id || !member.id['bioguide'] || seenIds.has(member.id['bioguide'])) {
@@ -190,13 +195,26 @@
                     
                     // Only include if term hasn't ended yet
                     if (termEnd > today) {
+                        const fullName = `${member.name.first} ${member.name.last}`;
+                        const partyCode = term.party[0];
+                        const districtDisplay = term.district ? `-${term.district}` : '';
                         const memberInfo = {
+                            id: member.id.bioguide,
+                            fullName: fullName,
+                            firstName: member.name.first,
+                            lastName: member.name.last,
                             party: term.party,
+                            partyCode: partyCode,
+                            state: term.state,
+                            district: term.district,
                             color: term.party === 'Democrat' ? '#0d6efd' : 
                                   (term.party === 'Republican' ? '#dc3545' : '#6c757d'),
-                            tooltip:
-                                `${member.name.first} ${member.name.last} (${term.party[0]}-${term.state}${term['district'] ? `-${term['district']}` : ''})`
+                            tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
+                            imageUrl: `https://theunitedstates.io/images/congress/225x275/${member.id.bioguide}.jpg`
                         };
+                        
+                        // Store the full member data for later use
+                        allMembersData.push(memberInfo);
                         
                         if (term.party === 'Democrat') {
                             demMembers.push(memberInfo);
@@ -248,6 +266,43 @@
                 totalSeatsElement.appendChild(link);
             }
 
+                // Function to update the representative card with member data
+                function updateRepresentativeCard(member) {
+                    if (!member) return;
+                    
+                    // Update card content
+                    document.getElementById('repName').textContent = member.fullName;
+                    
+                    // Style party badge based on party
+                    const partyBadge = document.getElementById('repParty');
+                    partyBadge.textContent = member.party;
+                    partyBadge.className = `badge ${member.party === 'Democrat' ? 'bg-primary' : 'bg-danger'} mb-3 d-inline-block`;
+                    
+                    // Update district info
+                    const districtText = member.district 
+                        ? `${getStateFullName(member.state)} - District ${member.district}`
+                        : getStateFullName(member.state);
+                    document.getElementById('repDistrict').textContent = districtText;
+                    
+                    // Update image
+                    const img = document.getElementById('repImage');
+                    img.src = member.imageUrl;
+                    img.alt = `Portrait of ${member.fullName}`;
+                    img.onerror = function() {
+                        // Fallback image if the member's photo is not available
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23ddd%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    
+                    // Update More Info button
+                    const moreInfoBtn = document.getElementById('moreInfoBtn');
+                    moreInfoBtn.onclick = function() {
+                        window.location.href = `representative.html?bioguide=${member.id}&source=house`;
+                    };
+                    
+                    // Show the card
+                    document.getElementById('representativeCardContainer').style.display = 'flex';
+                }
+                
                 // Create and render the parliament chart
                 const chartContainer = d3.select("#parliament-chart");
                 const containerWidth = chartContainer.node().getBoundingClientRect().width;
@@ -265,15 +320,88 @@
                 // which already contains individual member data with colors and tooltips
                 const g = svg.append("g");
                 
-                // Create and configure the parliament chart with the data
-                const chart = d3.parliamentChart(chartData, chartWidth)  // Pass data and dynamic width
-                    ['sections'](2)      // Set number of sections
-                    ['sectionGap'](40)   // Set gap between sections
-                    ['seatRadius'](chartWidth * 0.011) // Dynamic seat radius based on chart width (~9px at 800px width)
-                    ['rowHeight'](chartWidth * 0.024); // Dynamic row height based on chart width (~19px at 800px width)
+                // Store the chart data in a way that's accessible to click handlers
+                window.allMembersData = allMembersData;
+                
+                // Function to handle seat clicks
+                function handleSeatClick(event, d, i) {
+                    const member = window.allMembersData[i];
+                    if (member) {
+                        updateRepresentativeCard(member);
+                        
+                        // Scroll to the card
+                        const card = document.getElementById('representativeCardContainer');
+                        card.style.display = 'flex';
+                        card.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        
+                        // Log for debugging
+                        console.log('Clicked seat:', member);
+                    }
+                }
+                
+                // Store the chart configuration
+                const chart = d3.parliamentChart(chartData, chartWidth);
+                chart['sections'](2);
+                chart['sectionGap'](40);
+                chart['seatRadius'](chartWidth * 0.011);
+                chart['rowHeight'](chartWidth * 0.024);
                 
                 // Apply the chart to the group
                 g.call(chart);
+                
+                // Function to set up seat event listeners
+                function setupSeatListeners() {
+                    // Try different selectors to find the seats
+                    const selectors = ['.seat', 'circle', 'g > circle', 'svg > g > circle'];
+                    let seats = d3.selectAll([]);
+                    
+                    // Try each selector until we find the seats
+                    for (const selector of selectors) {
+                        const foundSeats = d3.selectAll(selector);
+                        if (foundSeats.size() > 0) {
+                            console.log(`Found ${foundSeats.size()} seats using selector: ${selector}`);
+                            seats = foundSeats;
+                            break;
+                        }
+                    }
+                    
+                    if (seats.size() === 0) {
+                        console.log('No seats found yet, will retry...');
+                        setTimeout(setupSeatListeners, 100); // Retry after a short delay
+                        return;
+                    }
+                    
+                    // Add click handlers to each seat
+                    seats
+                        .style('cursor', 'pointer')
+                        .on('click', function(event) {
+                            console.log('Seat clicked!');
+                            const seatNodes = d3.selectAll(seats.nodes()).nodes();
+                            const index = seatNodes.indexOf(this);
+                            console.log('Clicked seat index:', index);
+                            
+                            if (index >= 0 && window.allMembersData && window.allMembersData[index]) {
+                                const member = window.allMembersData[index];
+                                console.log('Found member:', member);
+                                updateRepresentativeCard(member);
+                                const card = document.getElementById('representativeCardContainer');
+                                card.style.display = 'flex';
+                                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            } else {
+                                console.error('No member data found for index:', index);
+                            }
+                        })
+                        .append('title')
+                        .text((d, i) => {
+                            return window.allMembersData && window.allMembersData[i] ? window.allMembersData[i].tooltip : 'No data';
+                        });
+                }
+                
+                // Initial setup of seat listeners
+                setupSeatListeners();
                 
                 // Add tooltips
                 const tooltip = d3.select("body").append("div")
