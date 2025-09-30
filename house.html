@@ -252,16 +252,17 @@
     function applyFilters() {
         const stateQuery = $('#stateInput').val().trim().toLowerCase();
         const nameQuery = $('#representativeName').val().trim().toLowerCase();
+        const districtQuery = $('#districtInput').val().trim().toLowerCase();
 
         // Get all seat elements - use the same selector as in setupSeatListeners
         const seats = d3.selectAll('circle.seat, circle').filter(function() {
             return this.tagName === 'circle';
         });
-        
+
         console.log('Found seats:', seats.size());
 
         // If no filters are active, show all seats
-        if (!stateQuery && !nameQuery) {
+        if (!stateQuery && !nameQuery && !districtQuery) {
             seats.style('opacity', 1);
             window.highlightedCount = 0;
             updateHighlightedCount();
@@ -271,16 +272,16 @@
         // Get state abbreviation if input is a full state name
         const stateAbbr = stateQuery ? getStateAbbreviation(stateQuery) || '' : '';
         const searchAbbr = stateAbbr.toLowerCase();
-        
+
         console.log('Filtering with:', { stateQuery, nameQuery, stateAbbr, searchAbbr });
-        
+
         // Combine all members into one array for easier processing
         const allMembers = [...(window.repMembers || []), ...(window.demMembers || [])];
-        
+
         // Debug: Log first few members
         allMembers.slice(0, 3).forEach((member, i) => {
-            console.log(`Member ${i}:`, { 
-                name: member?.fullName || 'Unknown', 
+            console.log(`Member ${i}:`, {
+                name: member?.fullName || 'Unknown',
                 state: member.state,
                 memberObject: member
             });
@@ -288,7 +289,7 @@
 
         // Only do partial matching for inputs longer than 1 character
         const isPartialMatch = stateQuery.length > 1;
-        
+
         let matchCount = 0;
         seats.each(function(d, i) {
             const member = allMembers[i];
@@ -296,22 +297,22 @@
                 d3.select(this).style('opacity', 0.2);
                 return;
             }
-            
+
             const memberState = (member.state || '').toLowerCase();
             const memberName = member.fullName || 'Unknown';
-            
+
             // Check if state matches
             let stateMatch = false;
-            
+
             if (searchAbbr) {
                 // Exact match for state code (e.g., 'ca' matches 'ca')
                 stateMatch = memberState === searchAbbr;
-                
+
                 // If we have a state abbreviation and input is long enough, check for partial matches
                 if (!stateMatch && isPartialMatch) {
                     // Check if member's state code starts with the input
                     stateMatch = memberState.startsWith(stateQuery);
-                    
+
                     // If we have a full state name, check if it starts with the input
                     if (!stateMatch && stateQuery.length > 2) {
                         const stateName = getStateNameFromAbbr(memberState.toUpperCase());
@@ -321,27 +322,45 @@
                     }
                 }
             }
-            
+
             // Check name match if name query exists
             const nameMatch = nameQuery ? (member.fullName || '').toLowerCase().includes(nameQuery) : false;
-            
-            // Only highlight if BOTH state and name match when both queries are present
+
+            // Check district match if district query exists
+            const memberDistrict = (member.district || '').toString().toLowerCase();
+            const districtMatch = districtQuery ?
+                (memberDistrict === districtQuery ||
+                 (districtQuery === 'at large' && (memberDistrict === '0' || memberDistrict === 'at large')) ||
+                 (districtQuery === '0' && memberDistrict === 'at large')) :
+                true;
+
+            // Determine if the seat should be highlighted based on active filters
             let shouldHighlight = false;
-            
-            if (stateQuery && nameQuery) {
-                // Both filters active - must match BOTH
+
+            // Check all possible filter combinations
+            if (stateQuery && nameQuery && districtQuery) {
+                // All three filters active - must match all
+                shouldHighlight = stateMatch && nameMatch && districtMatch;
+            } else if (stateQuery && nameQuery) {
+                // State and name filters
                 shouldHighlight = stateMatch && nameMatch;
-                if (shouldHighlight) {
-                    console.log(`Match found (both filters): ${memberName} from ${memberState}`);
-                }
+            } else if (stateQuery && districtQuery) {
+                // State and district filters
+                shouldHighlight = stateMatch && districtMatch;
+            } else if (nameQuery && districtQuery) {
+                // Name and district filters
+                shouldHighlight = nameMatch && districtMatch;
             } else if (stateQuery) {
                 // Only state filter active
                 shouldHighlight = stateMatch;
             } else if (nameQuery) {
                 // Only name filter active
                 shouldHighlight = nameMatch;
+            } else if (districtQuery) {
+                // Only district filter active
+                shouldHighlight = districtMatch;
             }
-            
+
             // Apply the highlight
             if (shouldHighlight) {
                 matchCount++;
@@ -362,7 +381,7 @@
         window.highlightedCount = matchCount;
         updateHighlightedCount();
     }
-    
+
     // Filter initialization will be set up after chart is loaded
 
     // Helper function to get full state name from abbreviation
@@ -385,7 +404,7 @@
     // Helper function to get state abbreviation from full name or abbreviation
     function getStateAbbreviation(input) {
         if (!input) return null;
-        
+
         const states = {
             'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
             'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
@@ -398,13 +417,13 @@
             'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
             'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY'
         };
-        
+
         // If input is a valid state code (2 letters), return it
         const upperInput = input.toUpperCase();
         if (input.length === 2 && Object.values(states).includes(upperInput)) {
             return upperInput;
         }
-        
+
         // Try to find a state that starts with the input
         const found = Object.keys(states).find(state => state.startsWith(input.toLowerCase()));
         return found ? states[found] : null;
@@ -613,11 +632,11 @@
                 }
             }
             window.updateHighlightedCount = updateHighlightedCount;
-            
+
             // Set up filters after chart is loaded
-            $('#stateInput, #representativeName').on('input', applyFilters);
+            $('#stateInput, #representativeName, #districtInput').on('input', applyFilters);
             applyFilters();
-            
+
             setupSeatListeners();
 
             // Tooltip on hover for seats
