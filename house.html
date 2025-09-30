@@ -50,7 +50,21 @@
     <div class="row justify-content-center">
         <div class="col-12 text-center">
             <h2>U.S. House of Representatives</h2>
-            <span class="lead">Current Party Composition</span>
+<!--            TODO: 2) Fix the card from lines 71 - 84 and make sure to follow all of template below from lines 55 - 69-->
+<!--            <div class="row justify-content-center mt-4" id="representativeCardContainer" style="display: none;">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="card p-0 d-flex flex-row align-items-start h-100">
+                        <img id="repImage" src="" alt="Representative Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
+                        <div class="p-3">
+                            <h4 class="card-title mb-3" id="repName"></h4>
+                            <span class="card-text mb-3 d-inline-block" id="repParty"></span>
+                            <p class="text-muted mb-2"><i class="fas fa-landmark me-2"></i><span id="repChamber">House</span></p>
+                            <p class="card-text mb-3" id="repDistrict"></p>
+                            <button type="button" class="btn btn-primary" id="moreInfoBtn">More Info</button>
+                        </div>
+                    </div>
+                </div>
+            </div>-->
 
             <!-- Representative Card -->
             <div class="row justify-content-center mt-4" id="representativeCardContainer">
@@ -67,9 +81,7 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Placeholder for future functionality -->
-            <!-- TODO: 2) When you click a seat/dot should open the card with that representative's info dot/seat you clicked on -->
+<!--        TODO: 3) Make it so the card is only visible when a representative is selected-->
         </div>
         <div class="col-12">
             <div class="chart-wrapper" style="width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden;">
@@ -93,6 +105,9 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
     <script>
+        // TODO: 1) Replace the img with #repImage, for house it should be https://clerk.house.gov/images/members/${bioguideId}.jpg and for the senators it should be https://clerk.house.gov/images/members/${bioguideId}.jpg
+        // TODO: 4) Change the seat/dot to inverse colors when selected for example if the seat is red make the border red and the inside white, and if the seat is blue make the border blue and the inside white
+        // TODO: 5) Get rid of tooltip function for hovering on pc and selecting on phone
         // Register the parliament chart with d3
         d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
         
