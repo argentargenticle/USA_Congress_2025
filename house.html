@@ -130,7 +130,7 @@
                     </div>
                     <!-- TODO: 7) Implement a Bootstrap-styled datalist element with #districtList associated with a new input field, providing autocomplete options At Large-District plus numbers 1 - 52-->
                 </form>
-                <span id="totalHighlight">First, search/filter representatives.</span>
+                <div id="totalHighlight" class="mt-2">First, search/filter representatives.</div>
             </div>
         </div>
         <div class="col-9">
@@ -189,6 +189,60 @@
             window.location.href = `index.html?searchTerm=${encodeURIComponent(query)}`;
         }
     });
+
+    // State filter handler
+    $('#stateInput').on('input', function() {
+        const state = $(this).val().trim().toLowerCase();
+        const seats = d3.selectAll('.seat, circle').filter(function() {
+            return this.tagName === 'circle';
+        });
+
+        if (!state) {
+            // If no state is selected, show all seats
+            seats.style('opacity', 1);
+            window.highlightedCount = 0;
+            updateHighlightedCount();
+            return;
+        }
+
+        let matchCount = 0;
+        seats.each(function(d, i) {
+            let member;
+            if (i < window.repMembers.length) {
+                member = window.repMembers[i];
+            } else {
+                member = window.demMembers[i - window.repMembers.length];
+            }
+            
+            const memberState = member.state.toLowerCase();
+            const stateAbbr = getStateAbbreviation(state);
+            const isMatch = memberState.includes(state.toLowerCase()) || 
+                          (stateAbbr && memberState === stateAbbr.toLowerCase());
+            
+            d3.select(this).style('opacity', isMatch ? 1 : 0.2);
+            if (isMatch) matchCount++;
+        });
+
+        window.highlightedCount = matchCount;
+        updateHighlightedCount();
+    });
+
+    // Helper function to get state abbreviation from full name
+    function getStateAbbreviation(stateName) {
+        const states = {
+            'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+            'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+            'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+            'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+            'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+            'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+            'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+            'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+            'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+            'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY'
+        };
+        return states[stateName.toLowerCase()] || null;
+    }
 
     // Main async function to load and process legislators data
     $(document).ready(async () => {
