@@ -70,8 +70,64 @@
                 <h5>Find Representative</h5>
                 <form id="representativeSearchForm" class="mb-3">
                     <label for="representativeName" class="form-label">Search by Name</label>
-                    <input type="text" class="form-control" id="representativeName" placeholder="Enter representative name">
-                    <!-- TODO: 6) Implement a Bootstrap-styled datalist element with #stateList associated with a new input field, providing autocomplete options for all 50 U.S. states.-->
+                    <input type="text" class="form-control mb-2" id="representativeName" placeholder="Enter representative name">
+                    
+                    <div class="mb-2">
+                        <label for="stateInput" class="form-label">Filter by State</label>
+                        <input type="text" class="form-control" id="stateInput" list="stateList" placeholder="Select a state">
+                        <datalist id="stateList">
+                            <option value="Alabama">
+                            <option value="Alaska">
+                            <option value="Arizona">
+                            <option value="Arkansas">
+                            <option value="California">
+                            <option value="Colorado">
+                            <option value="Connecticut">
+                            <option value="Delaware">
+                            <option value="Florida">
+                            <option value="Georgia">
+                            <option value="Hawaii">
+                            <option value="Idaho">
+                            <option value="Illinois">
+                            <option value="Indiana">
+                            <option value="Iowa">
+                            <option value="Kansas">
+                            <option value="Kentucky">
+                            <option value="Louisiana">
+                            <option value="Maine">
+                            <option value="Maryland">
+                            <option value="Massachusetts">
+                            <option value="Michigan">
+                            <option value="Minnesota">
+                            <option value="Mississippi">
+                            <option value="Missouri">
+                            <option value="Montana">
+                            <option value="Nebraska">
+                            <option value="Nevada">
+                            <option value="New Hampshire">
+                            <option value="New Jersey">
+                            <option value="New Mexico">
+                            <option value="New York">
+                            <option value="North Carolina">
+                            <option value="North Dakota">
+                            <option value="Ohio">
+                            <option value="Oklahoma">
+                            <option value="Oregon">
+                            <option value="Pennsylvania">
+                            <option value="Rhode Island">
+                            <option value="South Carolina">
+                            <option value="South Dakota">
+                            <option value="Tennessee">
+                            <option value="Texas">
+                            <option value="Utah">
+                            <option value="Vermont">
+                            <option value="Virginia">
+                            <option value="Washington">
+                            <option value="West Virginia">
+                            <option value="Wisconsin">
+                            <option value="Wyoming">
+                        </datalist>
+                    </div>
                     <!-- TODO: 7) Implement a Bootstrap-styled datalist element with #districtList associated with a new input field, providing autocomplete options At Large-District plus numbers 1 - 52-->
                 </form>
                 <span id="totalHighlight">First, search/filter representatives.</span>
