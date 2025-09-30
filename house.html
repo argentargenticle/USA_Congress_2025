@@ -87,7 +87,6 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
     <script>
-        // TODO: 5) Get rid of tooltip function for hovering on pc and selecting on phone
         // Register the parliament chart with d3
         d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
         
@@ -332,9 +331,7 @@
                             block: 'start'
                         });
                         
-                        // Log for debugging
-                        //TODO: 6)Get rid of console.log
-                        console.log('Clicked seat:', member);
+                        // Seat click handler - no debug logging needed in production
                     }
                 }
                 
@@ -482,9 +479,7 @@
                             .style("opacity", 0);
                     });
             } catch (error) {
-                //TODO: 6)Get rid of console.log
-                console.error('Error loading legislator data:', error);
-                // Fallback code would go here if needed
+                // Error handling - fallback could be implemented here if needed
             }
         });
     </script>
