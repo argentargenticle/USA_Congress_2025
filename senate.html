@@ -408,7 +408,6 @@
                     color,
                     tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
                     imageUrl: `https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg` // (Marker: replace image)
-                    // TODO: replace image (aka Marker: replace image) with https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg
                 };
 
                 window.allMembersData.push(memberInfo);
@@ -512,6 +511,16 @@
                 } else {
                     console.log('No bioguide ID found for member:', member);
                     img.src = 'https://via.placeholder.com/150x200?text=No+Image';
+                }
+                
+                // Set up More Info button click handler
+                const moreInfoBtn = document.getElementById('moreInfoBtn');
+                if (moreInfoBtn) {
+                    moreInfoBtn.onclick = function() {
+                        if (member.id) {
+                            window.location.href = `representative.html?bioguide=${member.id}&source=senate`;
+                        }
+                    };
                 }
                 
                 // Show the card
