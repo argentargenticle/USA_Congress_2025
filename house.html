@@ -604,8 +604,6 @@
                     return acc;
                 }, []);
 
-                document.getElementById('totalHighlight').textContent =
-                    `${matches.length} representative${matches.length !== 1 ? 's' : ''} found`;
 
                 seats.style('opacity', 0.3).style('filter', null);
                 const seatNodes = seats.nodes();
