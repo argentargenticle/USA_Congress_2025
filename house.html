@@ -317,24 +317,6 @@
                 // Store the chart data in a way that's accessible to click handlers
                 window.allMembersData = allMembersData;
                 
-                // Function to handle seat clicks
-                function handleSeatClick(event, d, i) {
-                    const member = window.allMembersData[i];
-                    if (member) {
-                        updateRepresentativeCard(member);
-                        
-                        // Scroll to the card
-                        const card = document.getElementById('representativeCardContainer');
-                        card.style.display = 'flex';
-                        card.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                        
-                        // Seat click handler - no debug logging needed in production
-                    }
-                }
-                
                 // Store the chart configuration
                 const chart = d3.parliamentChart(chartData, chartWidth);
                 chart['sections'](2);
@@ -392,6 +374,7 @@
                             const seatNodes = d3.selectAll(seats.nodes()).nodes();
                             const index = seatNodes.indexOf(this);
                             const currentSeat = d3.select(this);
+                            let memberData;
                             
                             // Get the member data based on the seat's position
                             let memberIndex = index;
