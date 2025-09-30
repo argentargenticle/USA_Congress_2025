@@ -179,8 +179,11 @@
                 const otherMembers = [];
                 const seenIds = new Set();
                 
-                // Store all member data for lookup
-                const allMembersData = [];
+                // Store all member data for lookup in window object
+                window.allMembersData = [];
+                window.repMembers = [];
+                window.demMembers = [];
+                window.otherMembers = [];
                 
                 houseMembers.forEach(member => {
                     // Skip if no bioguide ID exists or if we've seen this bioguide before
@@ -219,14 +222,14 @@
                         };
                         
                         // Store the full member data for later use
-                        allMembersData.push(memberInfo);
+                        window.allMembersData.push(memberInfo);
                         
                         if (term.party === 'Democrat') {
-                            demMembers.push(memberInfo);
+                            window.demMembers.push(memberInfo);
                         } else if (term.party === 'Republican') {
-                            repMembers.push(memberInfo);
+                            window.repMembers.push(memberInfo);
                         } else {
-                            otherMembers.push(memberInfo);
+                            window.otherMembers.push(memberInfo);
                         }
                     }
                 });
@@ -239,7 +242,7 @@
                 const chartData = [];
                 
                 // Add Republicans with their actual data (left side)
-                repMembers.forEach(member => {
+                window.repMembers.forEach(member => {
                     chartData.push({
                         color: member.color,
                         tooltip: member.tooltip
@@ -247,7 +250,7 @@
                 });
                 
                 // Add Democrats with their actual data (right side)
-                demMembers.forEach(member => {
+                window.demMembers.forEach(member => {
                     chartData.push({
                         color: member.color,
                         tooltip: member.tooltip
@@ -390,11 +393,11 @@
                             // Get the member data based on the seat's position
                             let memberIndex = index;
                             // If we're in the right half of the chart, adjust the index for Democrats
-                            if (index >= repMembers.length) {
-                                memberIndex = index - repMembers.length;
-                                memberData = demMembers[memberIndex];
+                            if (index >= window.repMembers.length) {
+                                memberIndex = index - window.repMembers.length;
+                                memberData = window.demMembers[memberIndex];
                             } else {
-                                memberData = repMembers[memberIndex];
+                                memberData = window.repMembers[memberIndex];
                             }
                             
                             // If clicking the same seat, deselect it
@@ -410,11 +413,16 @@
                             
                             // Deselect previous selection if any
                             if (selectedSeat) {
-                                let prevMemberIndex = selectedSeatIndex >= repMembers.length ? 
-                                    selectedSeatIndex - repMembers.length : selectedSeatIndex;
-                                let prevMember = selectedSeatIndex >= repMembers.length ?
-                                    demMembers[prevMemberIndex] : repMembers[prevMemberIndex];
-                                updateSeatAppearance(selectedSeat, false, prevMember.color);
+                                let prevMemberIndex = selectedSeatIndex >= window.repMembers.length ? 
+                                    selectedSeatIndex - window.repMembers.length : selectedSeatIndex;
+                                let prevMember = selectedSeatIndex >= window.repMembers.length ?
+                                    window.demMembers[prevMemberIndex] : window.repMembers[prevMemberIndex];
+                                if (prevMember) {
+                                    updateSeatAppearance(selectedSeat, false, prevMember.color);
+                                } else {
+                                    // Fallback to default color if member data is missing
+                                    updateSeatAppearance(selectedSeat, false, '#6c757d');
+                                }
                             }
                             
                             // Select new seat
@@ -432,11 +440,11 @@
                         .append('title')
                         .text((d, i) => {
                             // Show the correct tooltip based on seat position
-                            if (i < repMembers.length) {
-                                return repMembers[i]?.tooltip || 'No data';
+                            if (i < window.repMembers.length) {
+                                return window.repMembers[i]?.tooltip || 'No data';
                             } else {
-                                const demIndex = i - repMembers.length;
-                                return demMembers[demIndex]?.tooltip || 'No data';
+                                const demIndex = i - window.repMembers.length;
+                                return window.demMembers[demIndex]?.tooltip || 'No data';
                             }
                         });
                 }
@@ -494,79 +502,87 @@
             return d3.selectAll(null);
         }
 
-        // Handle representative name search using the same logic as index.html
+        // Handle representative name search
         $('#representativeName').on('input', function() {
-            console.log('Search input changed');
-            const query = $(this).val().toLowerCase().trim();
-            console.log('Search query:', query);
-            
-            // Find all seats
-            const seats = findSeats();
-            const seatNodes = seats.nodes();
-            console.log('Found seats:', seatNodes.length);
-            
-            // Reset all seats
-            seats
-                .style('opacity', 1)
-                .style('filter', 'none');
-            
-            // If search is empty, reset and return
-            if (!query) {
-                console.log('Empty query, resetting display');
-                return;
-            }
-            
-            // Check if allMembersData is available
-            if (!window.allMembersData) {
-                console.error('allMembersData is not defined');
-                return;
-            }
-            
-            // Normalize search query
-            const normalize = function(s) { 
-                return (s || '').toLowerCase().replace(/[^a-z]/g, '');
-            };
-            
-            const qNorm = normalize(query);
-            const qParts = query.trim().toLowerCase().split(/\s+/);
-            const qFirst = normalize(qParts[0] || '');
-            const qLast = normalize(qParts[qParts.length - 1] || '');
-            
-            // Find and highlight matches
-            let matchCount = 0;
-            window.allMembersData.forEach((member, index) => {
-                if (!member || index >= seatNodes.length) return;
+            try {
+                console.log('Search input changed');
+                const query = $(this).val().toLowerCase().trim();
+                console.log('Search query:', query);
                 
-                const first = member.firstName || '';
-                const last = member.lastName || '';
-                const fullName = `${first} ${last}`.toLowerCase();
+                // Get all seat elements
+                const seats = d3.selectAll('circle.seat, circle');
+                const seatNodes = seats.nodes();
+                console.log('Found seats:', seatNodes.length);
                 
-                // Normalize names for comparison
-                const candFull = normalize(fullName);
-                const candFirstLast = normalize(first + ' ' + last);
-                
-                // Check for matches using the same logic as index.html
-                const nameMatch = 
-                    candFull.indexOf(qNorm) !== -1 ||
-                    candFirstLast.indexOf(qNorm) !== -1 ||
-                    (qFirst && qLast && candFull.indexOf(qFirst) !== -1 && candFull.indexOf(qLast) !== -1);
-                
-                if (nameMatch) {
-                    matchCount++;
-                    console.log(`Match found: ${fullName} (index ${index})`);
+                // If search is empty, reset and return
+                if (!query) {
+                    console.log('Empty query, resetting display');
+                    seats
+                        .style('opacity', 1)
+                        .style('filter', null);
+                    return;
                 }
                 
-                // Update seat appearance based on match
-                const seat = d3.select(seatNodes[index]);
-                if (!nameMatch) {
-                    seat.style('opacity', 0.3);
-                } else {
-                    seat.style('opacity', 1)
-                         .style('filter', 'drop-shadow(0 0 4px #ffcc00)');
+                // Check if data is available
+                if (!window.allMembersData || !window.repMembers || !window.demMembers) {
+                    console.error('Required data not available', {
+                        allMembersData: !!window.allMembersData,
+                        repMembers: !!window.repMembers,
+                        demMembers: !!window.demMembers
+                    });
+                    return;
                 }
-            });
-            
-            console.log(`Search complete. Found ${matchCount} matches for '${query}'`);
+                
+                // Combine all members in the order they appear in the chart
+                const allMembersInOrder = [...window.repMembers, ...window.demMembers];
+                console.log('Total members in order:', allMembersInOrder.length);
+                
+                // First pass: find all matches
+                const matches = [];
+                allMembersInOrder.forEach((member, index) => {
+                    if (!member) return;
+                    
+                    const first = (member.firstName || '').toLowerCase();
+                    const last = (member.lastName || '').toLowerCase();
+                    const fullName = `${first} ${last}`.toLowerCase();
+                    
+                    // Check for matches in first name, last name, or full name
+                    const isMatch = 
+                        first.includes(query) ||
+                        last.includes(query) ||
+                        fullName.includes(query);
+                    
+                    if (isMatch) {
+                        matches.push(index);
+                        console.log(`Match found: ${fullName} (index ${index})`);
+                    }
+                });
+                
+                console.log(`Found ${matches.length} matches for '${query}'`);
+                
+                // Reset all seats to dimmed state first
+                seats.style('opacity', 0.3);
+                
+                // Highlight matching seats
+                matches.forEach(index => {
+                    if (index < seatNodes.length) {
+                        const seat = d3.select(seatNodes[index]);
+                        seat
+                            .style('opacity', 1)
+                            .style('filter', 'drop-shadow(0 0 4px #ffcc00)');
+                    }
+                });
+                
+                // If no matches, reset all seats
+                if (matches.length === 0) {
+                    seats
+                        .style('opacity', 1)
+                        .style('filter', null);
+                }
+                
+            } catch (error) {
+                console.error('Error in search:', error);
+            }
         });
         
         console.log('Search handler bound successfully');
