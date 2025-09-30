@@ -396,11 +396,20 @@
                             const index = seatNodes.indexOf(this);
                             const currentSeat = d3.select(this);
                             
+                            // Get the member data based on the seat's position
+                            let memberIndex = index;
+                            // If we're in the right half of the chart, adjust the index for Democrats
+                            if (index >= repMembers.length) {
+                                memberIndex = index - repMembers.length;
+                                memberData = demMembers[memberIndex];
+                            } else {
+                                memberData = repMembers[memberIndex];
+                            }
+                            
                             // If clicking the same seat, deselect it
                             if (selectedSeatIndex === index) {
                                 if (selectedSeat) {
-                                    const originalColor = window.allMembersData[selectedSeatIndex]?.color;
-                                    updateSeatAppearance(selectedSeat, false, originalColor);
+                                    updateSeatAppearance(selectedSeat, false, memberData.color);
                                 }
                                 selectedSeat = null;
                                 selectedSeatIndex = -1;
@@ -410,18 +419,20 @@
                             
                             // Deselect previous selection if any
                             if (selectedSeat) {
-                                const originalColor = window.allMembersData[selectedSeatIndex]?.color;
-                                updateSeatAppearance(selectedSeat, false, originalColor);
+                                let prevMemberIndex = selectedSeatIndex >= repMembers.length ? 
+                                    selectedSeatIndex - repMembers.length : selectedSeatIndex;
+                                let prevMember = selectedSeatIndex >= repMembers.length ?
+                                    demMembers[prevMemberIndex] : repMembers[prevMemberIndex];
+                                updateSeatAppearance(selectedSeat, false, prevMember.color);
                             }
                             
                             // Select new seat
                             selectedSeat = currentSeat;
                             selectedSeatIndex = index;
                             
-                            if (index >= 0 && window.allMembersData && window.allMembersData[index]) {
-                                const member = window.allMembersData[index];
-                                updateSeatAppearance(currentSeat, true, member.color);
-                                updateRepresentativeCard(member);
+                            if (memberData) {
+                                updateSeatAppearance(currentSeat, true, memberData.color);
+                                updateRepresentativeCard(memberData);
                                 const card = document.getElementById('representativeCardContainer');
                                 card.style.display = 'flex';
                                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -429,7 +440,13 @@
                         })
                         .append('title')
                         .text((d, i) => {
-                            return window.allMembersData && window.allMembersData[i] ? window.allMembersData[i].tooltip : 'No data';
+                            // Show the correct tooltip based on seat position
+                            if (i < repMembers.length) {
+                                return repMembers[i]?.tooltip || 'No data';
+                            } else {
+                                const demIndex = i - repMembers.length;
+                                return demMembers[demIndex]?.tooltip || 'No data';
+                            }
                         });
                 }
                 
