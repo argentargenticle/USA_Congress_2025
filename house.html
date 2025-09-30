@@ -352,6 +352,7 @@
                         });
                         
                         // Log for debugging
+                        //TODO: 6)Get rid of console.log
                         console.log('Clicked seat:', member);
                     }
                 }
@@ -376,6 +377,7 @@
                     for (const selector of selectors) {
                         const foundSeats = d3.selectAll(selector);
                         if (foundSeats.size() > 0) {
+                            //TODO: 6)Get rid of console.log
                             console.log(`Found ${foundSeats.size()} seats using selector: ${selector}`);
                             seats = foundSeats;
                             break;
@@ -383,6 +385,7 @@
                     }
                     
                     if (seats.size() === 0) {
+                        //TODO: 6)Get rid of console.log
                         console.log('No seats found yet, will retry...');
                         setTimeout(setupSeatListeners, 100); // Retry after a short delay
                         return;
@@ -392,9 +395,11 @@
                     seats
                         .style('cursor', 'pointer')
                         .on('click', function() {
+                            //TODO: 6)Get rid of console.log
                             console.log('Seat clicked!');
                             const seatNodes = d3.selectAll(seats.nodes()).nodes();
                             const index = seatNodes.indexOf(this);
+                            //TODO: 6)Get rid of console.log
                             console.log('Clicked seat index:', index);
                             
                             if (index >= 0 && window.allMembersData && window.allMembersData[index]) {
@@ -405,6 +410,7 @@
                                 card.style.display = 'flex';
                                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             } else {
+                                //TODO: 6)Get rid of console.log
                                 console.error('No member data found for index:', index);
                             }
                         })
@@ -446,6 +452,7 @@
                             .style("opacity", 0);
                     });
             } catch (error) {
+                //TODO: 6)Get rid of console.log
                 console.error('Error loading legislator data:', error);
                 // Fallback code would go here if needed
             }
