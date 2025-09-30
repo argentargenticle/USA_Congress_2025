@@ -110,7 +110,22 @@
             
             // Only hide if the card is visible, the click is outside the card, and not on a seat
             if (cardContainer && cardContainer.style.display === 'flex' && !isClickInsideCard && !isClickOnSeat) {
+                // Reset the selected seat if any
+                const selectedSeat = document.querySelector('circle[style*="fill: white"]');
+                if (selectedSeat) {
+                    const color = selectedSeat.getAttribute('data-party') === 'D' ? '#0d6efd' : '#dc3545';
+                    selectedSeat.style.fill = color;
+                    selectedSeat.style.stroke = 'none';
+                }
+                
+                // Hide the card
                 cardContainer.style.display = 'none';
+                
+                // Reset the global variable
+                if (window.selectedSeat) {
+                    window.selectedSeat = null;
+                    window.selectedSeatIndex = -1;
+                }
             }
         }
         
