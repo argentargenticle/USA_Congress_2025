@@ -214,7 +214,7 @@
                         const partyCode = term.party[0];
                         const districtDisplay = term.district ? `-${term.district}` : '';
                         const memberInfo = {
-                            id: member.id.bioguide,
+                            id: member.id['bioguide'],
                             fullName: fullName,
                             firstName: member.name.first,
                             lastName: member.name.last,
@@ -225,7 +225,7 @@
                             color: term.party === 'Democrat' ? '#0d6efd' : 
                                   (term.party === 'Republican' ? '#dc3545' : '#6c757d'),
                             tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
-                            imageUrl: `https://theunitedstates.io/images/congress/225x275/${member.id.bioguide}.jpg`
+                            imageUrl: `https://theunitedstates.io/images/congress/225x275/${member.id['bioguide']}.jpg`
                         };
                         
                         // Store the full member data for later use
@@ -294,10 +294,9 @@
                     partyBadge.className = `badge ${member.party === 'Democrat' ? 'bg-primary' : 'bg-danger'} mb-3 d-inline-block`;
                     
                     // Update district info
-                    const districtText = member.district 
+                    document.getElementById('repDistrict').textContent = member.district 
                         ? `${getStateFullName(member.state)} - District ${member.district}`
                         : getStateFullName(member.state);
-                    document.getElementById('repDistrict').textContent = districtText;
                     
                     // Update image
                     const img = document.getElementById('repImage');
@@ -392,7 +391,7 @@
                     // Add click handlers to each seat
                     seats
                         .style('cursor', 'pointer')
-                        .on('click', function(event) {
+                        .on('click', function() {
                             console.log('Seat clicked!');
                             const seatNodes = d3.selectAll(seats.nodes()).nodes();
                             const index = seatNodes.indexOf(this);
