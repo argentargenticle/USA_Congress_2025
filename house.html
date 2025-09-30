@@ -14,7 +14,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #6610f2;" data-bs-theme="dark">
     <div class="container">
-        <a class="navbar-brand" href="#" aria-label="Home">
+        <a class="navbar-brand" href="index.html" aria-label="Home">
             <i class="fa-solid fa-house"></i>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,12 +67,12 @@
             </div>-->
 
             <!-- Representative Card -->
-            <div class="row justify-content-center mt-4" id="representativeCardContainer">
-                <div class="col-12 col-md-8 col-lg-6">
+            <div class="row justify-content-center mt-4" id="representativeCardContainer" style="display: none;">
+                <div class="col-12 col-md-6 col-lg-4">
                     <div class="card p-0 d-flex flex-row align-items-start h-100">
-                        <img id="repImage" src="" alt="Representative Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
-                        <div class="p-3">
-                            <h4 class="card-title mb-3" id="repName"></h4>
+                        <img id="repImage" src="" alt="Portrait" width="150" height="200" class="flex-shrink-0 rounded-start me-2">
+                        <div class="p-2 text-start">
+                            <h5 class="card-title" id="repName"></h5>
                             <span class="card-text mb-3 d-inline-block" id="repParty"></span>
                             <p class="text-muted mb-2"><i class="fas fa-landmark me-2"></i><span id="repChamber">House</span></p>
                             <p class="card-text mb-3" id="repDistrict"></p>
@@ -105,7 +105,6 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
     <script>
-        // TODO: 1) Replace the img with #repImage, for house it should be https://clerk.house.gov/images/members/${bioguideId}.jpg and for the senators it should be https://clerk.house.gov/images/members/${bioguideId}.jpg
         // TODO: 4) Change the seat/dot to inverse colors when selected for example if the seat is red make the border red and the inside white, and if the seat is blue make the border blue and the inside white
         // TODO: 5) Get rid of tooltip function for hovering on pc and selecting on phone
         // Register the parliament chart with d3
@@ -291,7 +290,7 @@
                     // Style party badge based on party
                     const partyBadge = document.getElementById('repParty');
                     partyBadge.textContent = member.party;
-                    partyBadge.className = `badge ${member.party === 'Democrat' ? 'bg-primary' : 'bg-danger'} mb-3 d-inline-block`;
+                    partyBadge.className = `badge text-bg-${member.party === 'Democrat' ? 'primary' : 'danger'} mb-2 d-inline-block`;
                     
                     // Update district info
                     document.getElementById('repDistrict').textContent = member.district 
