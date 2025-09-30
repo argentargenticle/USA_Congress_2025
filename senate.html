@@ -427,6 +427,7 @@
             const totalSeats = demCount + repCount + otherCount;
             const remainingSeats = 100 - totalSeats;
 
+            //TODO: add other party count but group them with the party they caucuses with
             // Prepare chart data combining Republicans then Democrats
             const chartData = [
                 ...window.repMembers.map(m => ({color: m.color, tooltip: m.tooltip})),
@@ -482,7 +483,9 @@
                 .attr("viewBox", `0 0 ${width} ${height}`).style("max-width", "100%").style("height", "auto");
             const g = svg.append("g");
             const chart = d3.parliamentChart(chartData, width);
-            chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.011)['rowHeight'](width * 0.024);
+            //chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.011)['rowHeight'](width * 0.024);
+            //chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.0225)['rowHeight'](45);
+            chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.0225)['rowHeight'](width * 0.05625);
             g.call(chart);
 
             let selectedSeat = null;
