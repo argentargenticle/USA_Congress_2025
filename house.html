@@ -349,6 +349,26 @@
                 // Apply the chart to the group
                 g.call(chart);
                 
+                // Track the currently selected seat
+                let selectedSeat = null;
+                let selectedSeatIndex = -1;
+                
+                // Function to update seat appearance
+                function updateSeatAppearance(seat, isSelected, color) {
+                    if (!seat) return;
+                    
+                    if (isSelected) {
+                        // Inverted colors for selected seat
+                        seat.style('fill', 'white')
+                            .style('stroke', color)
+                            .style('stroke-width', '2px');
+                    } else {
+                        // Original colors for unselected seat
+                        seat.style('fill', color)
+                            .style('stroke', 'none');
+                    }
+                }
+                
                 // Function to set up seat event listeners
                 function setupSeatListeners() {
                     // Try different selectors to find the seats
@@ -359,17 +379,13 @@
                     for (const selector of selectors) {
                         const foundSeats = d3.selectAll(selector);
                         if (foundSeats.size() > 0) {
-                            //TODO: 6)Get rid of console.log
-                            console.log(`Found ${foundSeats.size()} seats using selector: ${selector}`);
                             seats = foundSeats;
                             break;
                         }
                     }
                     
                     if (seats.size() === 0) {
-                        //TODO: 6)Get rid of console.log
-                        console.log('No seats found yet, will retry...');
-                        setTimeout(setupSeatListeners, 100); // Retry after a short delay
+                        setTimeout(setupSeatListeners, 100);
                         return;
                     }
                     
@@ -377,23 +393,39 @@
                     seats
                         .style('cursor', 'pointer')
                         .on('click', function() {
-                            //TODO: 6)Get rid of console.log
-                            console.log('Seat clicked!');
                             const seatNodes = d3.selectAll(seats.nodes()).nodes();
                             const index = seatNodes.indexOf(this);
-                            //TODO: 6)Get rid of console.log
-                            console.log('Clicked seat index:', index);
+                            const currentSeat = d3.select(this);
+                            
+                            // If clicking the same seat, deselect it
+                            if (selectedSeatIndex === index) {
+                                if (selectedSeat) {
+                                    const originalColor = window.allMembersData[selectedSeatIndex]?.color;
+                                    updateSeatAppearance(selectedSeat, false, originalColor);
+                                }
+                                selectedSeat = null;
+                                selectedSeatIndex = -1;
+                                document.getElementById('representativeCardContainer').style.display = 'none';
+                                return;
+                            }
+                            
+                            // Deselect previous selection if any
+                            if (selectedSeat) {
+                                const originalColor = window.allMembersData[selectedSeatIndex]?.color;
+                                updateSeatAppearance(selectedSeat, false, originalColor);
+                            }
+                            
+                            // Select new seat
+                            selectedSeat = currentSeat;
+                            selectedSeatIndex = index;
                             
                             if (index >= 0 && window.allMembersData && window.allMembersData[index]) {
                                 const member = window.allMembersData[index];
-                                console.log('Found member:', member);
+                                updateSeatAppearance(currentSeat, true, member.color);
                                 updateRepresentativeCard(member);
                                 const card = document.getElementById('representativeCardContainer');
                                 card.style.display = 'flex';
                                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            } else {
-                                //TODO: 6)Get rid of console.log
-                                console.error('No member data found for index:', index);
                             }
                         })
                         .append('title')
