@@ -290,6 +290,7 @@
                     
                     // Update More Info button
                     const moreInfoBtn = document.getElementById('moreInfoBtn');
+                    moreInfoBtn.className = `btn ${member.party === 'Democrat' ? 'btn-primary' : 'btn-danger'}`;
                     moreInfoBtn.onclick = function() {
                         window.location.href = `representative.html?bioguide=${member.id}&source=house`;
                     };
