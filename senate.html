@@ -23,10 +23,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto gap-3">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-landmark me-2"></i>House</a>
+                    <a class="nav-link" href="house.html"><i class="fas fa-landmark me-2"></i>House</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="senate.html"><i class="fas fa-scale-balanced me-2"></i>Senate</a>
+                    <a class="nav-link active" href="senate.html"><i class="fas fa-scale-balanced me-2"></i>Senate</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Committees</a>
@@ -216,7 +216,8 @@
 <script>
     // Register the parliamentChart with d3 if not already defined
     d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
-
+    // TODO: Replace every mention of rep with sen
+    // TODO: Replace every mention of Representative with Senator
     // Close representative card when clicking outside card and seats
     function handleDocumentClick(event) {
         const card = document.getElementById('representativeCardContainer');
@@ -315,7 +316,7 @@
 
                     // If we have a full state name, check if it starts with the input
                     if (!stateMatch && stateQuery.length > 2) {
-                        const stateName = getStateNameFromAbbr(memberState.toUpperCase());
+                        const stateName = getStateAbbreviation(memberState.toUpperCase());
                         if (stateName) {
                             stateMatch = stateName.toLowerCase().startsWith(stateQuery);
                         }
@@ -328,7 +329,6 @@
 
             // Check district match if district query exists
             const memberDistrict = (member.district || '').toString().toLowerCase();
-            // TODO: fix At large district matching/filtering/searching
             const districtMatch = districtQuery ?
                 (memberDistrict === districtQuery ||
                  (districtQuery === 'at large' && (memberDistrict === '0' || memberDistrict === 'at large')) ||
@@ -385,23 +385,6 @@
 
     // Filter initialization will be set up after chart is loaded
 
-    // Helper function to get full state name from abbreviation
-    function getStateNameFromAbbr(abbr) {
-        const states = {
-            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
-            'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
-            'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
-            'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
-            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
-            'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
-            'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
-            'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
-            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
-            'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
-        };
-        return states[abbr.toUpperCase()] || null;
-    }
-
     // Helper function to get state abbreviation from full name or abbreviation
     function getStateAbbreviation(input) {
         if (!input) return null;
@@ -443,7 +426,7 @@
             const houseMembers = legislators.filter(l => {
                 if (!l['terms']?.length) return false;
                 const latestTerm = l['terms'].slice().sort((a,b) => new Date(b.end) - new Date(a.end))[0];
-                return latestTerm.type === 'rep';
+                return latestTerm.type === 'sen';
             });
 
             let repCount = 0, demCount = 0, otherCount = 0;
@@ -482,7 +465,8 @@
                     district: term.district,
                     color,
                     tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
-                    imageUrl: `https://clerk.house.gov/images/members/${bioguide}.jpg`
+                    imageUrl: `https://clerk.house.gov/images/members/${bioguide}.jpg` // (Marker: replace image)
+                    // TODO: replace image (aka Marker: replace image) with https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg
                 };
 
                 window.allMembersData.push(memberInfo);
@@ -500,7 +484,7 @@
             });
 
             const totalSeats = demCount + repCount + otherCount;
-            const remainingSeats = 435 - totalSeats;
+            const remainingSeats = 100 - totalSeats;
 
             // Prepare chart data combining Republicans then Democrats
             const chartData = [
@@ -508,6 +492,7 @@
                 ...window.demMembers.map(m => ({color: m.color, tooltip: m.tooltip}))
             ];
 
+            // TODO: add other party count but group them with the party they caucuses with
             // Update party counts and total seats UI
             document.getElementById('democrats-count').innerHTML =
                 `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${demCount})`;
