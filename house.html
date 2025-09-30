@@ -71,6 +71,7 @@
                 <form id="representativeSearchForm" class="mb-3">
                     <input type="text" class="form-control" id="representativeName" placeholder="Enter representative name">
                 </form>
+                <span id="totalHighlight">You need to filter representatives first</span>
             </div>
         </div>
         <div class="col-9">
@@ -111,6 +112,9 @@
                 }
             });
         });
+        // Global variable to track highlighted count
+        window.highlightedCount = 0;
+        
         $(document).ready(async function() {
             try {
                 // Fetch current legislators data
@@ -345,6 +349,26 @@
                 let selectedSeat = null;
                 let selectedSeatIndex = -1;
                 
+                // Function to update the highlighted count display
+                function updateHighlightedCount() {
+                    const countElement = document.getElementById('totalHighlight');
+                    if (!countElement) {
+                        console.error('Could not find totalHighlight element');
+                        return;
+                    }
+                    
+                    if (window.highlightedCount > 0) {
+                        countElement.textContent = `${window.highlightedCount} representative${window.highlightedCount !== 1 ? 's' : ''} highlighted`;
+                        countElement.style.fontWeight = 'bold';
+                    } else {
+                        countElement.textContent = 'You need to filter representatives first';
+                        countElement.style.fontWeight = 'normal';
+                    }
+                }
+                
+                // Make the function available globally for debugging
+                window.updateHighlightedCount = updateHighlightedCount;
+                
                 // Function to update seat appearance
                 function updateSeatAppearance(seat, isSelected, color) {
                     if (!seat) return;
@@ -404,6 +428,8 @@
                             if (selectedSeatIndex === index) {
                                 if (selectedSeat) {
                                     updateSeatAppearance(selectedSeat, false, memberData.color);
+                                    window.highlightedCount = 0; // Reset to 0 when deselecting
+                                    updateHighlightedCount();
                                 }
                                 selectedSeat = null;
                                 selectedSeatIndex = -1;
@@ -428,14 +454,13 @@
                             // Select new seat
                             selectedSeat = currentSeat;
                             selectedSeatIndex = index;
-                            
-                            if (memberData) {
-                                updateSeatAppearance(currentSeat, true, memberData.color);
-                                updateRepresentativeCard(memberData);
-                                const card = document.getElementById('representativeCardContainer');
-                                card.style.display = 'flex';
-                                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }
+                            window.highlightedCount = 1; // Set to 1 when selecting a new seat
+                            updateHighlightedCount();
+                            updateSeatAppearance(currentSeat, true, memberData.color);
+                            updateRepresentativeCard(memberData);
+                            const card = document.getElementById('representativeCardContainer');
+                            card.style.display = 'flex';
+                            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         })
                         .append('title')
                         .text((d, i) => {
@@ -559,6 +584,13 @@
                 });
                 
                 console.log(`Found ${matches.length} matches for '${query}'`);
+                
+                // Update the total highlight count
+                const highlightElement = document.getElementById('totalHighlight');
+                if (highlightElement) {
+                    highlightElement.textContent = `${matches.length} representative${matches.length !== 1 ? 's' : ''} found`;
+                    highlightElement.style.fontWeight = 'bold';
+                }
                 
                 // Reset all seats to dimmed state first
                 seats.style('opacity', 0.3);
