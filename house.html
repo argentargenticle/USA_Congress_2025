@@ -69,11 +69,12 @@
             <div>
                 <h5>Find Representative</h5>
                 <form id="representativeSearchForm" class="mb-3">
+                    <label for="representativeName" class="form-label">Search by Name</label>
                     <input type="text" class="form-control" id="representativeName" placeholder="Enter representative name">
                     <!-- TODO: 6) Implement a Bootstrap-styled datalist element with #stateList associated with a new input field, providing autocomplete options for all 50 U.S. states.-->
                     <!-- TODO: 7) Implement a Bootstrap-styled datalist element with #districtList associated with a new input field, providing autocomplete options At Large-District plus numbers 1 - 52-->
                 </form>
-                <span id="totalHighlight">You need to filter representatives first</span>
+                <span id="totalHighlight">First, search/filter representatives.</span>
             </div>
         </div>
         <div class="col-9">
@@ -144,8 +145,8 @@
 
             // Filter current House members only
             const houseMembers = legislators.filter(l => {
-                if (!l.terms?.length) return false;
-                const latestTerm = l.terms.slice().sort((a,b) => new Date(b.end) - new Date(a.end))[0];
+                if (!l['terms']?.length) return false;
+                const latestTerm = l['terms'].slice().sort((a,b) => new Date(b.end) - new Date(a.end))[0];
                 return latestTerm.type === 'rep';
             });
 
@@ -157,9 +158,10 @@
 
             // Process members and count by party, skipping non-voting territories and duplicates
             houseMembers.forEach(m => {
-                const bioguide = m.id?.bioguide;
-                if (!bioguide || seenBioguides.has(bioguide)) return;
-                const term = m.terms[m.terms.length - 1];
+                // Safely get bioguide with null checks
+                const bioguide = m && m.id && m.id['bioguide'];
+                if (typeof bioguide !== 'string' || !bioguide.trim() || seenBioguides.has(bioguide)) return;
+                const term = m['terms'][m['terms'].length - 1];
                 if (nonVoting.has(term.state)) return;
 
                 const termEnd = new Date(term.end);
@@ -258,7 +260,7 @@
                 .attr("viewBox", `0 0 ${width} ${height}`).style("max-width", "100%").style("height", "auto");
             const g = svg.append("g");
             const chart = d3.parliamentChart(chartData, width);
-            chart.sections(2).sectionGap(40).seatRadius(width * 0.011).rowHeight(width * 0.024);
+            chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.011)['rowHeight'](width * 0.024);
             g.call(chart);
 
             let selectedSeat = null;
