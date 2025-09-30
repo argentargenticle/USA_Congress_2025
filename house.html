@@ -98,207 +98,126 @@
 </footer>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
-    <script>
-        // Register the parliament chart with d3
-        d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
+<script>
+    // Register the parliamentChart with d3 if not already defined
+    d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
 
-        // Handle clicks outside the card to close it
-        function handleDocumentClick(event) {
-            const cardContainer = document.getElementById('representativeCardContainer');
-            const isClickInsideCard = event.target.closest('#representativeCardContainer');
-            const isClickOnSeat = event.target.closest('circle, .seat');
-            
-            // Only hide if the card is visible, the click is outside the card, and not on a seat
-            if (cardContainer && cardContainer.style.display === 'flex' && !isClickInsideCard && !isClickOnSeat) {
-                // Reset the selected seat if any
-                if (window.currentSelectedSeat) {
-                    const seat = d3.select(window.currentSelectedSeat);
-                    seat.style('fill', window.currentSeatColor || '#0d6efd')
-                        .style('stroke', 'none');
-                }
-                
-                // Hide the card
-                cardContainer.style.display = 'none';
-                
-                // Reset the global variable
-                if (window.selectedSeat) {
-                    window.selectedSeat = null;
-                    window.selectedSeatIndex = -1;
-                }
+    // Close representative card when clicking outside card and seats
+    function handleDocumentClick(event) {
+        const card = document.getElementById('representativeCardContainer');
+        if (
+            card && card.style.display === 'flex' &&
+            !event.target.closest('#representativeCardContainer') &&
+            !event.target.closest('circle, .seat')
+        ) {
+            // Reset previously selected seat style if any
+            if (window.currentSelectedSeat) {
+                d3.select(window.currentSelectedSeat)
+                    .style('fill', window.currentSeatColor || '#0d6efd')
+                    .style('stroke', 'none');
             }
+            card.style.display = 'none';
+            window.selectedSeat = null;
+            window.selectedSeatIndex = -1;
         }
-        
-        // Add the event listener with a small delay to ensure it doesn't interfere with initial page load
-        setTimeout(() => {
-            document.addEventListener('click', handleDocumentClick);
-        }, 100);
+    }
 
-        // Handle search form submission
-        $(function() {
-            $('#navbarSearchForm').on('submit', function(e) {
-                e.preventDefault();
-                const query = $('#navbarSearchInput').val().trim();
-                if (query) {
-                    window.location.href = `index.html?searchTerm=${encodeURIComponent(query)}`;
+    setTimeout(() => document.addEventListener('click', handleDocumentClick), 100);
+
+    // Search form submission handler - redirect with query param
+    $('#navbarSearchForm').on('submit', e => {
+        e.preventDefault();
+        const query = $('#navbarSearchInput').val().trim();
+        if (query) {
+            window.location.href = `index.html?searchTerm=${encodeURIComponent(query)}`;
+        }
+    });
+
+    // Main async function to load and process legislators data
+    $(document).ready(async () => {
+        try {
+            const response = await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
+            const legislators = await response.json();
+            const today = new Date();
+            const nonVoting = new Set(['AS', 'DC', 'GU', 'MP', 'PR', 'VI']);
+            const seenBioguides = new Set();
+
+            // Filter current House members only
+            const houseMembers = legislators.filter(l => {
+                if (!l.terms?.length) return false;
+                const latestTerm = l.terms.slice().sort((a,b) => new Date(b.end) - new Date(a.end))[0];
+                return latestTerm.type === 'rep';
+            });
+
+            let repCount = 0, demCount = 0, otherCount = 0;
+            window.repMembers = [];
+            window.demMembers = [];
+            window.otherMembers = [];
+            window.allMembersData = [];
+
+            // Process members and count by party, skipping non-voting territories and duplicates
+            houseMembers.forEach(m => {
+                const bioguide = m.id?.bioguide;
+                if (!bioguide || seenBioguides.has(bioguide)) return;
+                const term = m.terms[m.terms.length - 1];
+                if (nonVoting.has(term.state)) return;
+
+                const termEnd = new Date(term.end);
+                if (termEnd <= today) return;
+
+                seenBioguides.add(bioguide);
+
+                const fullName = `${m.name.first} ${m.name.last}`;
+                const color = term.party === 'Democrat' ? '#0d6efd' :
+                    term.party === 'Republican' ? '#dc3545' : '#6c757d';
+                const partyCode = term.party[0];
+                const districtDisplay = term.district ? `-${term.district}` : '';
+
+                const memberInfo = {
+                    id: bioguide,
+                    fullName,
+                    firstName: m.name.first,
+                    lastName: m.name.last,
+                    party: term.party,
+                    partyCode,
+                    state: term.state,
+                    district: term.district,
+                    color,
+                    tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
+                    imageUrl: `https://clerk.house.gov/images/members/${bioguide}.jpg`
+                };
+
+                window.allMembersData.push(memberInfo);
+
+                if (term.party === 'Democrat') {
+                    window.demMembers.push(memberInfo);
+                    demCount++;
+                } else if (term.party === 'Republican') {
+                    window.repMembers.push(memberInfo);
+                    repCount++;
+                } else {
+                    window.otherMembers.push(memberInfo);
+                    otherCount++;
                 }
             });
-        });
-        // Global variable to track highlighted count
-        window.highlightedCount = 0;
-        
-        $(document).ready(async function() {
-            try {
-                // Fetch current legislators data
-                const response = await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
-                const legislators = await response.json();
-                
-                // Filter for current House members (type: 'rep' in their most recent term)
-                const houseMembers = legislators.filter(legislator => {
-                    // Skip if terms is missing or not an array
-                    if (!legislator['terms'] || !Array.isArray(legislator['terms']) || legislator['terms']['length'] ===
-                        0) {
-                        return false;
-                    }
-                    
-                    // Get the most recent term
-                    const latestTerm = [...legislator['terms']].sort((a, b) =>
-                        new Date(b.end) - new Date(a.end)
-                    )[0];
-                    
-                    // Only include if it's a House member (type: 'rep')
-                    return latestTerm && latestTerm.type === 'rep';
-                });
 
-                const today = new Date();
-                const seenBioguides = new Set();
-                // List of non-voting states/territories
-                const nonVotingStates = ['AS', 'DC', 'GU', 'MP', 'PR', 'VI'];
-                
-                // Initialize counters
-                let republicans = 0;
-                let democrats = 0;
-                let otherParties = 0;
+            const totalSeats = demCount + repCount + otherCount;
+            const remainingSeats = 435 - totalSeats;
 
-                houseMembers.forEach(member => {
-                    // Skip if no bioguide ID exists or if we've seen this bioguide before
-                    if (!member.id || !member.id['bioguide'] || seenBioguides.has(member.id['bioguide'])) {
-                        return;
-                    }
-                    
-                    const term = member['terms'][member['terms'].length - 1];
-                    
-                    // Skip non-voting delegates (from territories)
-                    if (nonVotingStates.includes(term.state)) {
-                        return;
-                    }
-                    
-                    seenBioguides.add(member.id['bioguide']);
-                    const termEnd = new Date(term.end);
-                    
-                    // Only count members whose term hasn't ended yet
-                    if (termEnd > today) {
-                        // Count by party
-                        if (term.party === 'Republican') {
-                            republicans++;
-                        } else if (term.party === 'Democrat') {
-                            democrats++;
-                        } else {
-                            otherParties++;
-                        }
-                    }
-                });
+            // Prepare chart data combining Republicans then Democrats
+            const chartData = [
+                ...window.repMembers.map(m => ({color: m.color, tooltip: m.tooltip})),
+                ...window.demMembers.map(m => ({color: m.color, tooltip: m.tooltip}))
+            ];
 
-                // Prepare members for the chart using the already filtered and counted members
-                const demMembers = [];
-                const repMembers = [];
-                const otherMembers = [];
-                const seenIds = new Set();
-                
-                // Store all member data for lookup in window object
-                window.allMembersData = [];
-                window.repMembers = [];
-                window.demMembers = [];
-                window.otherMembers = [];
-                
-                houseMembers.forEach(member => {
-                    // Skip if no bioguide ID exists or if we've seen this bioguide before
-                    if (!member.id || !member.id['bioguide'] || seenIds.has(member.id['bioguide'])) {
-                        return;
-                    }
-                    
-                    const term = member['terms'][member['terms'].length - 1];
-                    
-                    // Skip non-voting delegates (from territories)
-                    if (nonVotingStates.includes(term.state)) {
-                        return;
-                    }
-                    
-                    seenIds.add(member.id['bioguide']);
-                    const termEnd = new Date(term.end);
-                    
-                    // Only include if term hasn't ended yet
-                    if (termEnd > today) {
-                        const fullName = `${member.name.first} ${member.name.last}`;
-                        const partyCode = term.party[0];
-                        const districtDisplay = term.district ? `-${term.district}` : '';
-                        const memberInfo = {
-                            id: member.id['bioguide'],
-                            fullName: fullName,
-                            firstName: member.name.first,
-                            lastName: member.name.last,
-                            party: term.party,
-                            partyCode: partyCode,
-                            state: term.state,
-                            district: term.district,
-                            color: term.party === 'Democrat' ? '#0d6efd' : 
-                                  (term.party === 'Republican' ? '#dc3545' : '#6c757d'),
-                            tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
-                            imageUrl: `https://clerk.house.gov/images/members/${member.id['bioguide']}.jpg`
-                        };
-                        
-                        // Store the full member data for later use
-                        window.allMembersData.push(memberInfo);
-                        
-                        if (term.party === 'Democrat') {
-                            window.demMembers.push(memberInfo);
-                        } else if (term.party === 'Republican') {
-                            window.repMembers.push(memberInfo);
-                        } else {
-                            window.otherMembers.push(memberInfo);
-                        }
-                    }
-                });
+            // Update party counts and total seats UI
+            document.getElementById('democrats-count').innerHTML =
+                `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${demCount})`;
+            document.getElementById('republicans-count').innerHTML =
+                `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${repCount})`;
 
-                // Use the dynamically counted seats
-                const totalSeats = democrats + republicans + otherParties;
-                const remainingSeats = 435 - totalSeats;
-                
-                // Prepare data for the chart
-                const chartData = [];
-                
-                // Add Republicans with their actual data (left side)
-                window.repMembers.forEach(member => {
-                    chartData.push({
-                        color: member.color,
-                        tooltip: member.tooltip
-                    });
-                });
-                
-                // Add Democrats with their actual data (right side)
-                window.demMembers.forEach(member => {
-                    chartData.push({
-                        color: member.color,
-                        tooltip: member.tooltip
-                    });
-                });
-            
-            // Update the UI with party counts
-            document.getElementById('democrats-count').innerHTML = `<i class="fas fa-square me-2" style="color: #0d6efd;"></i> Democrats (${democrats})`;
-            document.getElementById('republicans-count').innerHTML = `<i class="fas fa-square me-2" style="color: #dc3545;"></i> Republicans (${republicans})`;
-            
             const totalSeatsElement = document.getElementById('total-seats');
             totalSeatsElement.textContent = `Total: ${totalSeats} seats (${remainingSeats} ${remainingSeats === 1 ? 'vacancy' : 'vacancies'})`;
-            
             if (remainingSeats > 0) {
                 const link = document.createElement('a');
                 link.href = 'https://ballotpedia.org/Special_elections_to_the_119th_United_States_Congress_(2025-2026)';
@@ -309,350 +228,179 @@
                 totalSeatsElement.appendChild(link);
             }
 
-                // Function to update the representative card with member data
-                function updateRepresentativeCard(member) {
-                    if (!member) return;
-                    
-                    // Update card content
-                    document.getElementById('repName').textContent = member.fullName;
-                    
-                    // Style party badge based on party
-                    const partyBadge = document.getElementById('repParty');
-                    partyBadge.textContent = member.party;
-                    partyBadge.className = `badge text-bg-${member.party === 'Democrat' ? 'primary' : 'danger'} mb-2 d-inline-block`;
-                    
-                    // Update district info
-                    document.getElementById('repDistrict').textContent = member.district 
-                        ? `${getStateFullName(member.state)} - District ${member.district}`
-                        : getStateFullName(member.state);
-                    
-                    // Update image
-                    const img = document.getElementById('repImage');
-                    img.src = member.imageUrl;
-                    img.alt = `Portrait of ${member.fullName}`;
-                    img.onerror = function() {
-                        // Fallback image if the member's photo is not available
-                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23ddd%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
-                    };
-                    
-                    // Update More Info button
-                    const moreInfoBtn = document.getElementById('moreInfoBtn');
-                    moreInfoBtn.className = `btn ${member.party === 'Democrat' ? 'btn-primary' : 'btn-danger'}`;
-                    moreInfoBtn.onclick = function() {
-                        window.location.href = `representative.html?bioguide=${member.id}&source=house`;
-                    };
-                    
-                    // Show the card
-                    document.getElementById('representativeCardContainer').style.display = 'flex';
-                }
-                
-                // Create and render the parliament chart
-                const chartContainer = d3.select("#parliament-chart");
-                const containerWidth = chartContainer.node().getBoundingClientRect().width;
-                const chartWidth = Math.min(800, containerWidth);
-                const chartHeight = chartWidth * 0.5; // Maintain aspect ratio
-                
-                const svg = chartContainer.append("svg")
-                    .attr("width", chartWidth)
-                    .attr("height", chartHeight)
-                    .attr("viewBox", `0 0 ${chartWidth} ${chartHeight}`)
-                    .style("max-width", "100%")
-                    .style("height", "auto");
-                
-                // Prepare data for the chart using the existing chartData
-                // which already contains individual member data with colors and tooltips
-                const g = svg.append("g");
-                
-                // Store the chart data in a way that's accessible to click handlers
-                window.allMembersData = allMembersData;
-                
-                // Store the chart configuration
-                const chart = d3.parliamentChart(chartData, chartWidth);
-                chart['sections'](2);
-                chart['sectionGap'](40);
-                chart['seatRadius'](chartWidth * 0.011);
-                chart['rowHeight'](chartWidth * 0.024);
-                
-                // Apply the chart to the group
-                g.call(chart);
-                
-                // Track the currently selected seat
-                let selectedSeat = null;
-                let selectedSeatIndex = -1;
-                
-                // Function to update the highlighted count display
-                function updateHighlightedCount() {
-                    const countElement = document.getElementById('totalHighlight');
-                    if (!countElement) {
-                        console.error('Could not find totalHighlight element');
-                        return;
-                    }
-                    
-                    if (window.highlightedCount > 0) {
-                        countElement.textContent = `${window.highlightedCount} representative${window.highlightedCount !== 1 ? 's' : ''} highlighted`;
-                        countElement.style.fontWeight = 'bold';
-                    } else {
-                        countElement.textContent = 'You need to filter representatives first';
-                        countElement.style.fontWeight = 'normal';
-                    }
-                }
-                
-                // Make the function available globally for debugging
-                window.updateHighlightedCount = updateHighlightedCount;
-                
-                // Function to update seat appearance
-                function updateSeatAppearance(seat, isSelected, color) {
-                    if (!seat) return;
-                    
-                    if (isSelected) {
-                        // Inverted colors for selected seat
-                        seat.style('fill', 'white')
-                            .style('stroke', color)
-                            .style('stroke-width', '2px');
-                    } else {
-                        // Original colors for unselected seat
-                        seat.style('fill', color)
-                            .style('stroke', 'none');
-                    }
-                }
-                
-                // Function to set up seat event listeners
-                function setupSeatListeners() {
-                    // Try different selectors to find the seats
-                    const selectors = ['.seat', 'circle', 'g > circle', 'svg > g > circle'];
-                    let seats = d3.selectAll([]);
-                    
-                    // Try each selector until we find the seats
-                    for (const selector of selectors) {
-                        const foundSeats = d3.selectAll(selector);
-                        if (foundSeats.size() > 0) {
-                            seats = foundSeats;
-                            break;
-                        }
-                    }
-                    
-                    if (seats.size() === 0) {
-                        setTimeout(setupSeatListeners, 100);
-                        return;
-                    }
-                    
-                    // Add click handlers to each seat
-                    seats
-                        .style('cursor', 'pointer')
-                        .on('click', function() {
-                            const seatNodes = d3.selectAll(seats.nodes()).nodes();
-                            const index = seatNodes.indexOf(this);
-                            const currentSeat = d3.select(this);
-                            let memberData;
-                            
-                            // Get the member data based on the seat's position
-                            let memberIndex = index;
-                            // If we're in the right half of the chart, adjust the index for Democrats
-                            if (index >= window.repMembers.length) {
-                                memberIndex = index - window.repMembers.length;
-                                memberData = window.demMembers[memberIndex];
-                            } else {
-                                memberData = window.repMembers[memberIndex];
-                            }
-                            
-                            // If clicking the same seat, deselect it
-                            if (selectedSeatIndex === index) {
-                                if (selectedSeat) {
-                                    updateSeatAppearance(selectedSeat, false, memberData.color);
-                                    window.highlightedCount = 0; // Reset to 0 when deselecting
-                                    updateHighlightedCount();
-                                }
-                                selectedSeat = null;
-                                selectedSeatIndex = -1;
-                                document.getElementById('representativeCardContainer').style.display = 'none';
-                                return;
-                            }
-                            
-                            // Deselect previous selection if any
-                            if (selectedSeat) {
-                                let prevMemberIndex = selectedSeatIndex >= window.repMembers.length ? 
-                                    selectedSeatIndex - window.repMembers.length : selectedSeatIndex;
-                                let prevMember = selectedSeatIndex >= window.repMembers.length ?
-                                    window.demMembers[prevMemberIndex] : window.repMembers[prevMemberIndex];
-                                if (prevMember) {
-                                    updateSeatAppearance(selectedSeat, false, prevMember.color);
-                                } else {
-                                    // Fallback to default color if member data is missing
-                                    updateSeatAppearance(selectedSeat, false, '#6c757d');
-                                }
-                            }
-                            
-                                        // Select new seat
-                            selectedSeat = currentSeat;
-                            selectedSeatIndex = index;
-                            window.highlightedCount = 1;
-                            updateHighlightedCount();
-                            updateSeatAppearance(currentSeat, true, memberData.color);
-                            updateRepresentativeCard(memberData);
-                            const card = document.getElementById('representativeCardContainer');
-                            card.style.display = 'flex';
-                            
-                            // Store the seat and its color in window for easy access
-                            window.currentSelectedSeat = currentSeat.node();
-                            window.currentSeatColor = memberData.color;
-                            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        })
-                        .append('title')
-                        .text((d, i) => {
-                            // Show the correct tooltip based on seat position
-                            if (i < window.repMembers.length) {
-                                return window.repMembers[i]?.tooltip || 'No data';
-                            } else {
-                                const demIndex = i - window.repMembers.length;
-                                return window.demMembers[demIndex]?.tooltip || 'No data';
-                            }
-                        });
-                }
-                
-                // Initial setup of seat listeners
-                setupSeatListeners();
-                
-                // Add tooltips
-                const tooltip = d3.select("body").append("div")
-                    .attr("class", "tooltip")
-                    .style("opacity", 0)
-                    .style("position", "absolute")
-                    .style("background", "white")
-                    .style("padding", "5px 10px")
-                    .style("border", "1px solid #ddd")
-                    .style("border-radius", "4px")
-                    .style("pointer-events", "none");
-                
-                g.selectAll("circle")
-                    .data(chartData)
-                    .on("mouseover", function(event, d) {
-                        if (d.tooltip) {
-                            tooltip.transition()
-                                .duration(200)
-                                .style("opacity", .9);
-                            tooltip.html(d.tooltip)
-                                .style("left", (event.pageX + 10) + "px")
-                                .style("top", (event.pageY - 28) + "px");
-                        }
-                    })
-                    .on("mouseout", function() {
-                        tooltip.transition()
-                            .duration(500)
-                            .style("opacity", 0);
-                    });
-            } catch (error) {
-                // Error handling - fallback could be implemented here if needed
+            // Update representative card with selected member info
+            function updateRepresentativeCard(member) {
+                if (!member) return;
+                document.getElementById('repName').textContent = member.fullName;
+                const badge = document.getElementById('repParty');
+                badge.textContent = member.party;
+                badge.className = `badge text-bg-${member.party === 'Democrat' ? 'primary' : 'danger'} mb-2 d-inline-block`;
+                document.getElementById('repDistrict').textContent = member.district
+                    ? `${getStateFullName(member.state)} - District ${member.district}`
+                    : getStateFullName(member.state);
+                const img = document.getElementById('repImage');
+                img.src = member.imageUrl;
+                img.alt = `Portrait of ${member.fullName}`;
+                img.onerror = () => img.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23ddd%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+                const moreInfo = document.getElementById('moreInfoBtn');
+                moreInfo.className = `btn ${member.party === 'Democrat' ? 'btn-primary' : 'btn-danger'}`;
+                moreInfo.onclick = () =>
+                    window.location.href = `representative.html?bioguide=${member.id}&source=house`;
+                document.getElementById('representativeCardContainer').style.display = 'flex';
             }
-        });
-        // Debug: Log when the search input event is bound
-        console.log('Binding search input handler...');
-        
-        // Function to find seat elements
-        function findSeats() {
-            // Try different selectors to find the seats
-            const selectors = ['circle', 'g > circle', 'svg > g > circle'];
-            for (const selector of selectors) {
-                const seats = d3.selectAll(selector);
-                if (seats.size() > 0) {
-                    console.log(`Found ${seats.size()} seats using selector: ${selector}`);
-                    return seats;
-                }
-            }
-            console.warn('No seat elements found in the DOM');
-            return d3.selectAll(null);
-        }
 
-        // Handle representative name search
-        $('#representativeName').on('input', function() {
-            try {
-                console.log('Search input changed');
-                const query = $(this).val().toLowerCase().trim();
-                console.log('Search query:', query);
-                
-                // Get all seat elements
-                const seats = d3.selectAll('circle.seat, circle');
-                const seatNodes = seats.nodes();
-                console.log('Found seats:', seatNodes.length);
-                
-                // If search is empty, reset and return
-                if (!query) {
-                    console.log('Empty query, resetting display');
-                    seats
-                        .style('opacity', 1)
-                        .style('filter', null);
-                    return;
-                }
-                
-                // Check if data is available
-                if (!window.allMembersData || !window.repMembers || !window.demMembers) {
-                    console.error('Required data not available', {
-                        allMembersData: !!window.allMembersData,
-                        repMembers: !!window.repMembers,
-                        demMembers: !!window.demMembers
-                    });
-                    return;
-                }
-                
-                // Combine all members in the order they appear in the chart
-                const allMembersInOrder = [...window.repMembers, ...window.demMembers];
-                console.log('Total members in order:', allMembersInOrder.length);
-                
-                // First pass: find all matches
-                const matches = [];
-                allMembersInOrder.forEach((member, index) => {
-                    if (!member) return;
-                    
-                    const first = (member.firstName || '').toLowerCase();
-                    const last = (member.lastName || '').toLowerCase();
-                    const fullName = `${first} ${last}`.toLowerCase();
-                    
-                    // Check for matches in first name, last name, or full name
-                    const isMatch = 
-                        first.includes(query) ||
-                        last.includes(query) ||
-                        fullName.includes(query);
-                    
-                    if (isMatch) {
-                        matches.push(index);
-                        console.log(`Match found: ${fullName} (index ${index})`);
-                    }
+            // Create and render parliament chart using d3
+            const chartContainer = d3.select("#parliament-chart");
+            const width = Math.min(800, chartContainer.node().getBoundingClientRect().width);
+            const height = width * 0.5;
+            const svg = chartContainer.append("svg")
+                .attr("width", width).attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`).style("max-width", "100%").style("height", "auto");
+            const g = svg.append("g");
+            const chart = d3.parliamentChart(chartData, width);
+            chart.sections(2).sectionGap(40).seatRadius(width * 0.011).rowHeight(width * 0.024);
+            g.call(chart);
+
+            let selectedSeat = null;
+            let selectedIndex = -1;
+
+            function updateSeatAppearance(seat, selected, color) {
+                if (!seat) return;
+                seat.style('fill', selected ? 'white' : color)
+                    .style('stroke', selected ? color : 'none')
+                    .style('stroke-width', selected ? '2px' : null);
+            }
+
+            function setupSeatListeners() {
+                const seats = d3.selectAll('.seat, circle').filter(function () {
+                    // Filter to only those with tooltips (members)
+                    return this.tagName === 'circle';
                 });
-                
-                console.log(`Found ${matches.length} matches for '${query}'`);
-                
-                // Update the total highlight count
-                const highlightElement = document.getElementById('totalHighlight');
-                if (highlightElement) {
-                    highlightElement.textContent = `${matches.length} representative${matches.length !== 1 ? 's' : ''} found`;
-                    highlightElement.style.fontWeight = 'bold';
+                if (seats.empty()) {
+                    setTimeout(setupSeatListeners, 100);
+                    return;
                 }
-                
-                // Reset all seats to dimmed state first
-                seats.style('opacity', 0.3);
-                
-                // Highlight matching seats
-                matches.forEach(index => {
-                    if (index < seatNodes.length) {
-                        const seat = d3.select(seatNodes[index]);
-                        seat
+
+                seats.style('cursor', 'pointer').on('click', function () {
+                    const nodes = seats.nodes();
+                    const index = nodes.indexOf(this);
+                    let member;
+                    if (index < window.repMembers.length) {
+                        member = window.repMembers[index];
+                    } else {
+                        member = window.demMembers[index - window.repMembers.length];
+                    }
+
+                    if (selectedIndex === index) {
+                        updateSeatAppearance(selectedSeat, false, member.color);
+                        window.highlightedCount = 0;
+                        updateHighlightedCount();
+                        selectedSeat = null;
+                        selectedIndex = -1;
+                        document.getElementById('representativeCardContainer').style.display = 'none';
+                        return;
+                    }
+
+                    if (selectedSeat) {
+                        const prevMember = selectedIndex >= window.repMembers.length
+                            ? window.demMembers[selectedIndex - window.repMembers.length]
+                            : window.repMembers[selectedIndex];
+                        updateSeatAppearance(selectedSeat, false, prevMember?.color || '#6c757d');
+                    }
+
+                    selectedSeat = d3.select(this);
+                    selectedIndex = index;
+                    window.highlightedCount = 1;
+                    updateHighlightedCount();
+                    updateSeatAppearance(selectedSeat, true, member.color);
+                    updateRepresentativeCard(member);
+                    const card = document.getElementById('representativeCardContainer');
+                    card.style.display = 'flex';
+                    window.currentSelectedSeat = selectedSeat.node();
+                    window.currentSeatColor = member.color;
+                    card.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }).append('title').text((d, i) =>
+                    i < window.repMembers.length ? window.repMembers[i]?.tooltip : window.demMembers[i - window.repMembers.length]?.tooltip || 'No data');
+            }
+
+            function updateHighlightedCount() {
+                const el = document.getElementById('totalHighlight');
+                if (!el) return;
+                if (window.highlightedCount > 0) {
+                    el.textContent = `${window.highlightedCount} representative${window.highlightedCount !== 1 ? 's' : ''} highlighted`;
+                    el.style.fontWeight = 'bold';
+                } else {
+                    el.textContent = 'You need to filter representatives first';
+                    el.style.fontWeight = 'normal';
+                }
+            }
+            window.updateHighlightedCount = updateHighlightedCount;
+
+            setupSeatListeners();
+
+            // Tooltip on hover for seats
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0)
+                .style("position", "absolute")
+                .style("background", "white")
+                .style("padding", "5px 10px")
+                .style("border", "1px solid #ddd")
+                .style("border-radius", "4px")
+                .style("pointer-events", "none");
+
+            g.selectAll("circle")
+                .on("mouseover", (event, d) => {
+                    if (d.tooltip) {
+                        tooltip.transition().duration(200).style("opacity", 0.9);
+                        tooltip.html(d.tooltip)
+                            .style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    }
+                })
+                .on("mouseout", () => tooltip.transition().duration(500).style("opacity", 0));
+
+            // Search representatives by name and highlight seats
+            $('#representativeName').on('input', function () {
+                const query = $(this).val().toLowerCase().trim();
+                const seats = d3.selectAll('circle.seat, circle');
+                if (!query) {
+                    seats.style('opacity', 1).style('filter', null);
+                    updateHighlightedCount();
+                    return;
+                }
+                if (!window.allMembersData) return;
+
+                const allMembers = [...window.repMembers, ...window.demMembers];
+                const matches = allMembers.reduce((acc, member, idx) => {
+                    const first = member.firstName.toLowerCase();
+                    const last = member.lastName.toLowerCase();
+                    const full = `${first} ${last}`;
+                    if (first.includes(query) || last.includes(query) || full.includes(query)) acc.push(idx);
+                    return acc;
+                }, []);
+
+                document.getElementById('totalHighlight').textContent =
+                    `${matches.length} representative${matches.length !== 1 ? 's' : ''} found`;
+
+                seats.style('opacity', 0.3).style('filter', null);
+                const seatNodes = seats.nodes();
+                matches.forEach(i => {
+                    if (i < seatNodes.length) {
+                        d3.select(seatNodes[i])
                             .style('opacity', 1)
                             .style('filter', 'drop-shadow(0 0 4px #ffcc00)');
                     }
                 });
-                
-                // If no matches, reset all seats
-                if (matches.length === 0) {
-                    seats
-                        .style('opacity', 1)
-                        .style('filter', null);
-                }
-                
-            } catch (error) {
-                console.error('Error in search:', error);
-            }
-        });
-        
-        console.log('Search handler bound successfully');
-    </script>
+                if (matches.length === 0) seats.style('opacity', 1);
+            });
+
+        } catch (e) {
+            console.error('Error loading legislators data:', e);
+        }
+    });
+
+    console.log('Setup complete');
+</script>
 </body>
 </html>
