@@ -238,10 +238,12 @@
     if (source === 'home') {
         $('#backButton span').text('Back to Home');
         $('#backButton').attr('href', 'index.html');
-    }
-    if (source === 'house') {
+    }else if (source === 'house') {
         $('#backButton span').text('Back to House');
         $('#backButton').attr('href', 'house.html');
+    }else if (source === 'senate') {
+        $('#backButton span').text('Back to Senate');
+        $('#backButton').attr('href', 'senate.html');
     }
     if (bioguideId) {
         $.getJSON('https://unitedstates.github.io/congress-legislators/legislators-current.json')
