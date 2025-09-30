@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>U.S. House of Representatives</title>
+    <title>U.S. Senate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
@@ -49,7 +49,7 @@
 <main class="container my-4">
     <div class="row justify-content-center">
         <div class="col-12 text-center">
-            <h2>U.S. House of Representatives</h2>
+            <h2>U.S. Senate</h2>
             <!-- Representative Card -->
             <div class="row justify-content-center mt-4" id="representativeCardContainer" style="display: none;">
                 <div class="col-12 col-md-6 col-lg-4">
@@ -67,10 +67,10 @@
         </div>
         <div class="col-3">
             <div>
-                <h5>Find Representative</h5>
-                <form id="representativeSearchForm" class="mb-3">
-                    <label for="representativeName" class="form-label">Search by Name</label>
-                    <input type="text" class="form-control mb-2" id="representativeName" placeholder="Enter representative name">
+                <h5>Find Senator</h5>
+                <form id="senatorSearchForm" class="mb-3">
+                    <label for="senatorName" class="form-label">Search by Name</label>
+                    <input type="text" class="form-control mb-2" id="senatorName" placeholder="Enter senator's name">
                     
                     <div class="mb-2">
                         <label for="stateInput" class="form-label">Filter by State</label>
@@ -128,8 +128,17 @@
                             <option value="Wyoming">
                         </datalist>
                     </div>
+                    <div class="mb-2">
+                        <label for="senateClass" class="form-label">Senate Class</label>
+                        <select class="form-select" id="senateClass">
+                            <option value="">All Classes</option>
+                            <option value="1">Class I</option>
+                            <option value="2">Class II</option>
+                            <option value="3">Class III</option>
+                        </select>
+                    </div>
                 </form>
-                <div id="totalHighlight" class="mt-2">First, search/filter representatives.</div>
+                <div id="totalHighlight" class="mt-2">First, search/filter senators.</div>
             </div>
         </div>
         <div class="col-9">
@@ -155,16 +164,16 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
 <script>
+    // TODO: Fix the tooltip
+    // TODO: Fix the card to appear when a seat or dot is clicked
     // Register the parliamentChart with d3 if not already defined
     d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
-    // TODO: Replace every mention of rep with sen
-    // TODO: Replace every mention of Representative with Senator
-    // Close representative card when clicking outside card and seats
+    // Close senator card when clicking outside card and seats
     function handleDocumentClick(event) {
-        const card = document.getElementById('representativeCardContainer');
+        const card = document.getElementById('senatorCardContainer');
         if (
             card && card.style.display === 'flex' &&
-            !event.target.closest('#representativeCardContainer') &&
+            !event.target.closest('#senatorCardContainer') &&
             !event.target.closest('circle, .seat')
         ) {
             // Reset previously selected seat style if any
@@ -186,15 +195,34 @@
         e.preventDefault();
         const query = $('#navbarSearchInput').val().trim();
         if (query) {
-            window.location.href = `index.html?searchTerm=${encodeURIComponent(query)}`;
+            window.location.href = `index.html?search=${encodeURIComponent(query)}`;
         }
     });
 
-    // Combined filter function
+    // Update the applyFilters function to handle Senate-specific filtering
     function applyFilters() {
-        const stateQuery = $('#stateInput').val()?.trim().toLowerCase() || '';
-        const nameQuery = $('#representativeName').val()?.trim().toLowerCase() || '';
-        const districtQuery = $('#districtInput').val()?.trim().toLowerCase() || '';
+        const nameFilter = $('#senatorName').val().toLowerCase();
+        const stateFilter = $('#stateInput').val();
+        const classFilter = $('#senateClass').val();
+        
+        // Filter senators based on inputs
+        const filteredSenators = window.legislators.filter(senator => {
+            // Only include senators (not representatives)
+            if (senator.terms[senator.terms.length - 1].type !== 'sen') return false;
+            
+            const nameMatch = !nameFilter || 
+                (senator.name.official_full && senator.name.official_full.toLowerCase().includes(nameFilter)) ||
+                `${senator.name.first} ${senator.name.last}`.toLowerCase().includes(nameFilter);
+                
+            const stateMatch = !stateFilter || 
+                senator.terms[senator.terms.length - 1].state === stateFilter ||
+                getStateAbbreviation(senator.terms[senator.terms.length - 1].state) === stateFilter;
+                
+            const classMatch = !classFilter || 
+                String(senator.terms[senator.terms.length - 1].class) === classFilter;
+                
+            return nameMatch && stateMatch && classMatch;
+        });
 
         // Get all seat elements - use the same selector as in setupSeatListeners
         const seats = d3.selectAll('circle.seat, circle').filter(function() {
@@ -358,17 +386,21 @@
     $(document).ready(async () => {
         try {
             const response = await fetch('https://unitedstates.github.io/congress-legislators/legislators-current.json');
-            const legislators = await response.json();
+            const allLegislators = await response.json();
             const today = new Date();
+            
+            // Store senators data in window object for filtering
+            window.legislators = allLegislators.filter(leg => {
+                const latestTerm = leg.terms[leg.terms.length - 1];
+                return latestTerm.type === 'sen' && new Date(latestTerm.start) <= today && new Date(latestTerm.end) >= today;
+            });
+            
+            console.log('Loaded', window.legislators.length, 'current senators');
             const nonVoting = new Set(['AS', 'DC', 'GU', 'MP', 'PR', 'VI']);
             const seenBioguides = new Set();
 
-            // Filter current House members only
-            const houseMembers = legislators.filter(l => {
-                if (!l['terms']?.length) return false;
-                const latestTerm = l['terms'].slice().sort((a,b) => new Date(b.end) - new Date(a.end))[0];
-                return latestTerm.type === 'sen';
-            });
+            // Use the already filtered senators
+            const senateMembers = window.legislators;
 
             let repCount = 0, demCount = 0, otherCount = 0;
             window.repMembers = [];
@@ -377,7 +409,7 @@
             window.allMembersData = [];
 
             // Process members and count by party, skipping non-voting territories and duplicates
-            houseMembers.forEach(m => {
+            senateMembers.forEach(m => {
                 // Safely get bioguide with null checks
                 const bioguide = m && m.id && m.id['bioguide'];
                 if (typeof bioguide !== 'string' || !bioguide.trim() || seenBioguides.has(bioguide)) return;
@@ -453,25 +485,35 @@
                 totalSeatsElement.appendChild(link);
             }
 
-            // Update representative card with selected member info
-            function updateRepresentativeCard(member) {
+            // Update senator card with selected member info
+            function updateSenatorCard(member) {
                 if (!member) return;
-                document.getElementById('repName').textContent = member.fullName;
-                const badge = document.getElementById('repParty');
-                badge.textContent = member.party;
-                badge.className = `badge text-bg-${member.party === 'Democrat' ? 'primary' : 'danger'} mb-2 d-inline-block`;
-                document.getElementById('repDistrict').textContent = member.district
-                    ? `${getStateFullName(member.state)} - District ${member.district}`
-                    : getStateFullName(member.state);
+                
+                const card = document.getElementById('representativeCardContainer');
+                if (!card) return;
+                
+                const currentTerm = member.terms[member.terms.length - 1];
+                const stateName = getStateFullName(currentTerm.state) || currentTerm.state;
+                const senateClass = currentTerm.class ? `Class ${currentTerm.class}` : '';
+                
+                // Update card content
+                document.getElementById('repName').textContent = `${member.name.official_full || `${member.name.first} ${member.name.last}`}`;
+                document.getElementById('repParty').textContent = currentTerm.party === 'Democrat' ? 'Democratic Party' : 
+                                                               currentTerm.party === 'Republican' ? 'Republican Party' : 
+                                                               currentTerm.party || 'Independent';
+                document.getElementById('repDistrict').textContent = `${stateName} • ${senateClass}`;
+                
+                // Set image if available
                 const img = document.getElementById('repImage');
-                img.src = member.imageUrl;
-                img.alt = `Portrait of ${member.fullName}`;
-                img.onerror = () => img.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23ddd%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23666%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
-                const moreInfo = document.getElementById('moreInfoBtn');
-                moreInfo.className = `btn ${member.party === 'Democrat' ? 'btn-primary' : 'btn-danger'}`;
-                moreInfo.onclick = () =>
-                    window.location.href = `representative.html?bioguide=${member.id}&source=senate`;
-                document.getElementById('representativeCardContainer').style.display = 'flex';
+                if (member.id && member.id.bioguide) {
+                    img.src = `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide[0].toUpperCase()}${member.id.bioguide.substring(1)}.jpg`;
+                    img.onerror = () => { img.src = 'https://via.placeholder.com/150x200?text=No+Image'; };
+                } else {
+                    img.src = 'https://via.placeholder.com/150x200?text=No+Image';
+                }
+                
+                // Show the card
+                card.style.display = 'flex';
             }
 
             // Create and render parliament chart using d3
@@ -500,7 +542,6 @@
 
             function setupSeatListeners() {
                 const seats = d3.selectAll('.seat, circle').filter(function () {
-                    // Filter to only those with tooltips (members)
                     return this.tagName === 'circle';
                 });
                 if (seats.empty()) {
@@ -508,64 +549,69 @@
                     return;
                 }
 
-                seats.style('cursor', 'pointer').on('click', function () {
-                    const nodes = seats.nodes();
-                    const index = nodes.indexOf(this);
-                    let member;
-                    if (index < window.repMembers.length) {
-                        member = window.repMembers[index];
-                    } else {
-                        member = window.demMembers[index - window.repMembers.length];
-                    }
-
-                    if (selectedIndex === index) {
-                        updateSeatAppearance(selectedSeat, false, member.color);
-                        window.highlightedCount = 0;
-                        updateHighlightedCount();
-                        selectedSeat = null;
-                        selectedIndex = -1;
+                // Add click event to seats
+                seats.on('click', function() {
+                    const seat = d3.select(this);
+                    const seatIndex = seat.attr('data-index');
+                    const isRepSeat = seatIndex < window.repMembers.length;
+                    const member = isRepSeat ? window.repMembers[seatIndex] : window.demMembers[seatIndex - window.repMembers.length];
+                    
+                    if (window.selectedSeat === this) {
+                        // Deselect if clicking the same seat
+                        updateSeatAppearance(seat, false, member?.color);
                         document.getElementById('representativeCardContainer').style.display = 'none';
-                        return;
+                        window.selectedSeat = null;
+                    } else {
+                        // Deselect previous selection if any
+                        if (window.selectedSeat) {
+                            const prevSeat = d3.select(window.selectedSeat);
+                            const prevIndex = prevSeat.attr('data-index');
+                            const prevIsRepSeat = prevIndex < window.repMembers.length;
+                            const prevMember = prevIsRepSeat ? window.repMembers[prevIndex] : window.demMembers[prevIndex - window.repMembers.length];
+                            updateSeatAppearance(prevSeat, false, prevMember?.color);
+                        }
+                        
+                        // Select new seat
+                        updateSeatAppearance(seat, true, member?.color);
+                        updateSenatorCard(member);
+                        window.selectedSeat = this;
                     }
-
-                    if (selectedSeat) {
-                        const prevMember = selectedIndex >= window.repMembers.length
-                            ? window.demMembers[selectedIndex - window.repMembers.length]
-                            : window.repMembers[selectedIndex];
-                        updateSeatAppearance(selectedSeat, false, prevMember?.color || '#6c757d');
-                    }
-
-                    selectedSeat = d3.select(this);
-                    selectedIndex = index;
-                    window.highlightedCount = 1;
+                    
                     updateHighlightedCount();
-                    updateSeatAppearance(selectedSeat, true, member.color);
-                    updateRepresentativeCard(member);
-                    const card = document.getElementById('representativeCardContainer');
-                    card.style.display = 'flex';
-                    window.currentSelectedSeat = selectedSeat.node();
-                    window.currentSeatColor = member.color;
-                    card.scrollIntoView({behavior: 'smooth', block: 'start'});
-                }).append('title').text((d, i) =>
-                    i < window.repMembers.length ? window.repMembers[i]?.tooltip : window.demMembers[i - window.repMembers.length]?.tooltip || 'No data');
+                });
+
+                // Add tooltips to seats
+                seats.append('title').text(function(d, i) {
+                    if (i < window.repMembers.length) {
+                        return window.repMembers[i]?.tooltip || 'No data';
+                    } else {
+                        const demIndex = i - window.repMembers.length;
+                        return window.demMembers[demIndex]?.tooltip || 'No data';
+                    }
+                });
             }
 
             function updateHighlightedCount() {
                 const el = document.getElementById('totalHighlight');
                 if (!el) return;
                 if (window.highlightedCount > 0) {
-                    el.textContent = `${window.highlightedCount} representative${window.highlightedCount !== 1 ? 's' : ''} highlighted`;
+                    el.textContent = `${window.highlightedCount} senator${window.highlightedCount !== 1 ? 's' : ''} highlighted`;
                     el.style.fontWeight = 'bold';
                 } else {
-                    el.textContent = 'You need to filter representatives first';
+                    el.textContent = 'You need to filter senators first';
                     el.style.fontWeight = 'normal';
                 }
             }
             window.updateHighlightedCount = updateHighlightedCount;
 
-            // Set up filters after chart is loaded
-            $('#stateInput, #representativeName, #districtInput').on('input', applyFilters);
-            applyFilters();
+            // Initialize filters with current senators data
+            if (window.legislators && window.legislators.length > 0) {
+                // Set up filters after chart is loaded
+                $('#stateInput, #senatorName, #senateClass').on('change input', applyFilters);
+                applyFilters();
+            } else {
+                console.error('No senator data available for filtering');
+            }
 
             setupSeatListeners();
 
