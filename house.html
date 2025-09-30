@@ -65,14 +65,20 @@
                 </div>
             </div>
         </div>
-<!--        TODO: 3) In the new col-4, I want you to add form with text input with id="representativeName"-->
-<!--        TODO: 2) create a div with col-4 -->
-<!--        TODO: 1) replace col-12 (the div wraps the chart-wrapper div) aka (TO-DO-1) with col-8 -->
-        <div class="col-12"> <!-- (TO-DO-1) -->
+        <div class="col-3">
+            <div>
+                <h5>Find Representative</h5>
+                <form id="representativeSearchForm" class="mb-3">
+                    <input type="text" class="form-control" id="representativeName" placeholder="Enter representative name">
+                </form>
+            </div>
+        </div>
+        <div class="col-9">
             <div class="chart-wrapper" style="width: 100%; max-width: 800px; margin: 0 auto; overflow: hidden;">
                 <div id="parliament-chart" class="text-center"></div>
             </div>
         </div>
+
         <div class="col-12 mt-4">
             <div class="d-flex flex-column align-items-center gap-2">
                 <div class="d-flex gap-4">
@@ -92,7 +98,9 @@
     <script>
         // Register the parliament chart with d3
         d3.parliamentChart = d3.parliamentChart || d3.parliamentChart;
-        
+
+        // TODO: 5) When person click outside of the card, the card closes.
+
         // Handle search form submission
         $(function() {
             $('#navbarSearchForm').on('submit', function(e) {
@@ -468,7 +476,100 @@
                 // Error handling - fallback could be implemented here if needed
             }
         });
-        // TODO: 4) Implement a functionality such that upon input of the #representativeName (aka comparing against representative names) field, all non-matching representatives are visually dimmed, while matching representatives are highlighted with a yellow fuzzy border to indicate a match.
+        // Debug: Log when the search input event is bound
+        console.log('Binding search input handler...');
+        
+        // Function to find seat elements
+        function findSeats() {
+            // Try different selectors to find the seats
+            const selectors = ['circle', 'g > circle', 'svg > g > circle'];
+            for (const selector of selectors) {
+                const seats = d3.selectAll(selector);
+                if (seats.size() > 0) {
+                    console.log(`Found ${seats.size()} seats using selector: ${selector}`);
+                    return seats;
+                }
+            }
+            console.warn('No seat elements found in the DOM');
+            return d3.selectAll(null);
+        }
+
+        // Handle representative name search using the same logic as index.html
+        $('#representativeName').on('input', function() {
+            console.log('Search input changed');
+            const query = $(this).val().toLowerCase().trim();
+            console.log('Search query:', query);
+            
+            // Find all seats
+            const seats = findSeats();
+            const seatNodes = seats.nodes();
+            console.log('Found seats:', seatNodes.length);
+            
+            // Reset all seats
+            seats
+                .style('opacity', 1)
+                .style('filter', 'none');
+            
+            // If search is empty, reset and return
+            if (!query) {
+                console.log('Empty query, resetting display');
+                return;
+            }
+            
+            // Check if allMembersData is available
+            if (!window.allMembersData) {
+                console.error('allMembersData is not defined');
+                return;
+            }
+            
+            // Normalize search query
+            const normalize = function(s) { 
+                return (s || '').toLowerCase().replace(/[^a-z]/g, '');
+            };
+            
+            const qNorm = normalize(query);
+            const qParts = query.trim().toLowerCase().split(/\s+/);
+            const qFirst = normalize(qParts[0] || '');
+            const qLast = normalize(qParts[qParts.length - 1] || '');
+            
+            // Find and highlight matches
+            let matchCount = 0;
+            window.allMembersData.forEach((member, index) => {
+                if (!member || index >= seatNodes.length) return;
+                
+                const first = member.firstName || '';
+                const last = member.lastName || '';
+                const fullName = `${first} ${last}`.toLowerCase();
+                
+                // Normalize names for comparison
+                const candFull = normalize(fullName);
+                const candFirstLast = normalize(first + ' ' + last);
+                
+                // Check for matches using the same logic as index.html
+                const nameMatch = 
+                    candFull.indexOf(qNorm) !== -1 ||
+                    candFirstLast.indexOf(qNorm) !== -1 ||
+                    (qFirst && qLast && candFull.indexOf(qFirst) !== -1 && candFull.indexOf(qLast) !== -1);
+                
+                if (nameMatch) {
+                    matchCount++;
+                    console.log(`Match found: ${fullName} (index ${index})`);
+                }
+                
+                // Update seat appearance based on match
+                const seat = d3.select(seatNodes[index]);
+                if (!nameMatch) {
+                    seat.style('opacity', 0.3);
+                } else {
+                    seat.style('opacity', 1)
+                         .style('filter', 'drop-shadow(0 0 4px #ffcc00)');
+                }
+            });
+            
+            console.log(`Search complete. Found ${matchCount} matches for '${query}'`);
+        });
+        
+        console.log('Search handler bound successfully');
     </script>
 </body>
 </html>
