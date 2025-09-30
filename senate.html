@@ -407,7 +407,7 @@
                     district: term.district,
                     color,
                     tooltip: `${fullName} (${partyCode}-${term.state}${districtDisplay})`,
-                    imageUrl: `https://clerk.house.gov/images/members/${bioguide}.jpg` // (Marker: replace image)
+                    imageUrl: `https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg` // (Marker: replace image)
                     // TODO: replace image (aka Marker: replace image) with https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg
                 };
 
@@ -497,10 +497,20 @@
                 
                 // Set image if available
                 const img = document.getElementById('repImage');
-                if (member.id && member.id.bioguide) {
-                    img.src = `https://bioguide.congress.gov/bioguide/photo/${member.id.bioguide[0].toUpperCase()}${member.id.bioguide.substring(1)}.jpg`;
-                    img.onerror = () => { img.src = 'https://via.placeholder.com/150x200?text=No+Image'; };
+                if (member.id) {
+                    // The bioguide ID is directly in member.id
+                    const bioguide = member.id;
+                    const imageUrl = `https://raw.githubusercontent.com/argentargenticle/USA_Senate_Images/refs/heads/main/${bioguide}.jpg`;
+                    console.log('Loading image for bioguide:', bioguide, 'from URL:', imageUrl);
+                    
+                    img.onload = () => console.log('Image loaded successfully:', imageUrl);
+                    img.onerror = (e) => {
+                        console.error('Failed to load image:', imageUrl, 'Error:', e);
+                        img.src = 'https://via.placeholder.com/150x200?text=No+Image';
+                    };
+                    img.src = imageUrl;
                 } else {
+                    console.log('No bioguide ID found for member:', member);
                     img.src = 'https://via.placeholder.com/150x200?text=No+Image';
                 }
                 
