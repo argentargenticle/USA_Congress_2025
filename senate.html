@@ -297,6 +297,32 @@
 
     // Filter initialization will be set up after chart is loaded
 
+    // Helper function to get full state name from abbreviation
+    function getStateFullName(abbreviation) {
+        if (!abbreviation) return null;
+        
+        const states = {
+            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+            'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+            'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+            'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+            'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+            'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+            'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+            'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
+        };
+        
+        // Check if input is already a full state name
+        const upperInput = abbreviation.toUpperCase();
+        const found = Object.entries(states).find(([abbr, name]) => 
+            abbr === upperInput || name.toLowerCase() === abbreviation.toLowerCase()
+        );
+        
+        return found ? found[1] : null;
+    }
+
     // Helper function to get state abbreviation from full name or abbreviation
     function getStateAbbreviation(input) {
         if (!input) return null;
@@ -403,10 +429,22 @@
             const remainingSeats = 100 - totalSeats;
 
             //TODO: add other party count but group them with the party they caucuses with
-            // Prepare chart data combining Republicans then Democrats
+            // Prepare chart data combining Republicans then Democrats with proper indices
             const chartData = [
-                ...window.repMembers.map(m => ({color: m.color, tooltip: m.tooltip})),
-                ...window.demMembers.map(m => ({color: m.color, tooltip: m.tooltip}))
+                ...window.repMembers.map((m, i) => ({
+                    color: m.color, 
+                    tooltip: m.tooltip,
+                    'data-index': i,
+                    party: 'rep',
+                    member: m
+                })),
+                ...window.demMembers.map((m, i) => ({
+                    color: m.color, 
+                    tooltip: m.tooltip,
+                    'data-index': i + window.repMembers.length,
+                    party: 'dem',
+                    member: m
+                }))
             ];
 
             // TODO: add other party count but group them with the party they caucuses with
@@ -430,21 +468,32 @@
 
             // Update senator card with selected member info
             function updateSenatorCard(member) {
-                if (!member) return;
+                console.log('updateSenatorCard called with member:', member);
+                if (!member) {
+                    console.error('No member data provided to updateSenatorCard');
+                    return;
+                }
                 
                 const card = document.getElementById('senatorCardContainer');
-                if (!card) return;
+                if (!card) {
+                    console.error('Could not find senator card container');
+                    return;
+                }
                 
-                const currentTerm = member.terms[member.terms.length - 1];
-                const stateName = getStateFullName(currentTerm.state) || currentTerm.state;
-                const senateClass = currentTerm.class ? `Class ${currentTerm.class}` : '';
+                // Update card content with the member's information
+                const name = member.fullName || `${member.firstName} ${member.lastName}`;
+                const party = member.party === 'Democrat' ? 'Democratic Party' : 
+                            member.party === 'Republican' ? 'Republican Party' : 
+                            member.party || 'Independent';
                 
-                // Update card content
-                document.getElementById('repName').textContent = `${member.name.official_full || `${member.name.first} ${member.name.last}`}`;
-                document.getElementById('repParty').textContent = currentTerm.party === 'Democrat' ? 'Democratic Party' : 
-                                                               currentTerm.party === 'Republican' ? 'Republican Party' : 
-                                                               currentTerm.party || 'Independent';
-                document.getElementById('repDistrict').textContent = `${stateName} • ${senateClass}`;
+                document.getElementById('repName').textContent = name;
+                document.getElementById('repParty').textContent = party;
+                
+                // If we have state information, include it
+                if (member.state) {
+                    const stateName = getStateFullName(member.state) || member.state;
+                    document.getElementById('repDistrict').textContent = stateName;
+                }
                 
                 // Set image if available
                 const img = document.getElementById('repImage');
@@ -456,6 +505,7 @@
                 }
                 
                 // Show the card
+                console.log('Setting card display to flex');
                 card.style.display = 'flex';
             }
 
@@ -463,15 +513,43 @@
             const chartContainer = d3.select("#parliament-chart");
             const width = Math.min(800, chartContainer.node().getBoundingClientRect().width);
             const height = width * 0.5;
+            
+            // Clear any existing chart
+            chartContainer.selectAll("*").remove();
+            
             const svg = chartContainer.append("svg")
-                .attr("width", width).attr("height", height)
-                .attr("viewBox", `0 0 ${width} ${height}`).style("max-width", "100%").style("height", "auto");
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .style("max-width", "100%")
+                .style("height", "auto");
+                
             const g = svg.append("g");
+            
+            // Store the chart data for later use
+            window.chartData = chartData;
+            
+            // Create the chart with our data
             const chart = d3.parliamentChart(chartData, width);
-            //chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.011)['rowHeight'](width * 0.024);
-            //chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.0225)['rowHeight'](45);
-            chart['sections'](2)['sectionGap'](40)['seatRadius'](width * 0.0225)['rowHeight'](width * 0.05625);
+            chart['sections'](2)
+                ['sectionGap'](40)
+                ['seatRadius'](width * 0.0225)
+                ['rowHeight'](width * 0.05625);
+            
+            // Call the chart
             g.call(chart);
+            
+            // Add data attributes to the seats after they're created
+            d3.selectAll('circle')
+                .each(function(d, i) {
+                    const circle = d3.select(this);
+                    circle.attr('data-index', i);
+                    if (i < window.repMembers.length) {
+                        circle.attr('data-party', 'rep');
+                    } else {
+                        circle.attr('data-party', 'dem');
+                    }
+                });
 
             let selectedSeat = null;
             let selectedIndex = -1;
@@ -494,12 +572,24 @@
 
                 // Add click event to seats with smooth transitions
                 seats.on('click', function(event) {
+                    console.log('Seat clicked');
                     event.stopPropagation(); // Prevent event from bubbling to document
                     
                     const seat = d3.select(this);
-                    const seatIndex = seat.attr('data-index');
-                    const isRepSeat = seatIndex < window.repMembers.length;
-                    const member = isRepSeat ? window.repMembers[seatIndex] : window.demMembers[seatIndex - window.repMembers.length];
+                    const seatIndex = parseInt(seat.attr('data-index'), 10);
+                    const party = seat.attr('data-party');
+                    
+                    console.log('Seat index:', seatIndex, 'Party:', party);
+                    
+                    // Get the member data based on party and index
+                    let member;
+                    if (party === 'rep') {
+                        member = window.repMembers[seatIndex];
+                    } else {
+                        member = window.demMembers[seatIndex - (window.repMembers ? window.repMembers.length : 0)];
+                    }
+                    
+                    console.log('Member data:', member);
                     
                     if (!member) return; // Skip if no member data
                     
@@ -530,13 +620,17 @@
                         updateSeatAppearance(seat, true, member.color);
                         
                         // Update and show card with animation
+                        console.log('Calling updateSenatorCard with member:', member);
                         updateSenatorCard(member);
                         const card = d3.select('#senatorCardContainer');
+                        console.log('Card element:', card.node());
                         card.style('display', 'flex')
                             .style('opacity', 0)
                             .transition()
                             .duration(200)
-                            .style('opacity', 1);
+                            .style('opacity', 1)
+                            .on('start', () => console.log('Starting card fade-in'))
+                            .on('end', () => console.log('Finished card fade-in'));
                             
                         window.selectedSeat = this;
                         
