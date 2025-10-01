@@ -338,10 +338,9 @@
                     const stateForUrl = stateFullName.toLowerCase().replace(/\s+/g, '-');
                     $('#AIPAC').attr('href', `https://www.trackaipac.com/states/${stateForUrl}?rq=${encodeURIComponent(officialFullName)}`);
                     
-                    // Set Congress.gov link
-                    //TODO: fix ballotpediaForUrl below for some reason it is currently empty
-                    const ballotpediaForUrl = (rep.id.ballotpedia || '').toLowerCase().replace(/\s+/g, '-');
-                    $('a:contains("Congress.gov")').attr('href', `https://www.congress.gov/member/${ballotpediaForUrl}/${bioguideId}?`);
+                    // Set Congress.gov link with name and bioguide ID
+                    const nameForUrl = `${name.first.toLowerCase()}-${name.last.toLowerCase()}`;
+                    $('a:contains("Congress.gov")').attr('href', `https://www.congress.gov/member/${nameForUrl}/${bioguideId}`);
                     
                     // Update the representative's information
                     $('#representativeName').text(fullName);
