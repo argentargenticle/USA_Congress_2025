@@ -71,7 +71,7 @@
                 <form id="representativeSearchForm" class="mb-3">
                     <label for="representativeName" class="form-label">Search by Name</label>
                     <input type="text" class="form-control mb-2" id="representativeName" placeholder="Enter representative name">
-                    
+<!--                    TODO: Add party filter -->
                     <div class="mb-2">
                         <label for="stateInput" class="form-label">Filter by State</label>
                         <input type="text" class="form-control" id="stateInput" list="stateList" placeholder="Select a state">
@@ -210,6 +210,16 @@
 </main>
 <footer class="container py-3 text-muted border-top">
     <small>Argenticle @Copyright 2025 </small>
+    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#6807ef', 'D1D41SBYV');kofiwidget2.draw();</script>
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+        kofiWidgetOverlay.draw('argenticle', {
+            'type': 'floating-chat',
+            'floating-chat.donateButton.text': 'Support me',
+            'floating-chat.donateButton.background-color': '#6807ef',
+            'floating-chat.donateButton.text-color': '#fff'
+        });
+    </script>
 </footer>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/d3-parliament-chart.min.js"></script>
