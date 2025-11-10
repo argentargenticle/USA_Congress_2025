@@ -52,7 +52,6 @@
             list-style-type: none;
             display: flex;
             gap: 1rem;
-            margin: 0;
             padding: 0;
             max-width: 1200px;
             margin: 0 auto;
@@ -294,7 +293,6 @@
             padding: 0;
             background: none;
             border-radius: 0;
-            padding: 0;
         }
 
         #links ul li a {
@@ -491,6 +489,13 @@
                         <p id="chamber">Loading...</p>
                     </div>
                 </div>
+                <div class="info-item" id="senateClassItem" style="display: none;">
+                    <div class="info-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="info-content">
+                        <strong>Senate Class</strong>
+                        <p id="senateClass">-</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -573,6 +578,8 @@
     </div>
 </div>
 <script>
+    // language=JQuery-CSS
+    const selector = ".representative-card";
     const votingStates = new Set([
         "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
         "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
@@ -783,12 +790,23 @@
         }
         document.getElementById("birthday").textContent=formatLongDate(legislator.bio?.birthday);
         document.getElementById("age").textContent=calculateAge(legislator.bio?.birthday);
-        const chamber = t.type === "rep" ? "House" : "Senate";
+        const isSenator = t.type === "sen";
+        const chamber = isSenator ? "Senate" : "House";
         document.getElementById("chamber").textContent = chamber;
+        
+        // Show/hide and set Senate class
+        const senateClassItem = document.getElementById("senateClassItem");
+        const senateClassEl = document.getElementById("senateClass");
+        if (isSenator) {
+            senateClassItem.style.display = 'flex';
+            senateClassEl.textContent = `Class ${t.class}`;
+        } else if (senateClassItem) {
+            senateClassItem.style.display = 'none';
+        }
         
         // Hide district info for Senate
         const districtItem = document.querySelector('.info-item:has(#districtNum)');
-        if (chamber === "Senate" && districtItem) {
+        if (t.type === "sen" && districtItem) {
             districtItem.style.display = 'none';
         } else if (districtItem) {
             districtItem.style.display = 'flex'; // Ensure it's visible for House
